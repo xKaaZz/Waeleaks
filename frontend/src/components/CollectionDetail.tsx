@@ -6,6 +6,7 @@ import {
   Image,
   Heading,
   Text,
+  Divider,
   VStack,
   Spinner,
   Center,
@@ -15,7 +16,6 @@ import {
 import api from '../axiosConfig'
 import { Link as RouterLink } from 'react-router-dom'
 import { Button } from '@chakra-ui/react'
-import { Divider } from '@chakra-ui/layout'
 
 interface Track {
   id: number
