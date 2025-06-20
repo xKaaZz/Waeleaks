@@ -9,13 +9,13 @@ import {
   VStack,
   Spinner,
   Center,
-  Divider,
   List,
   ListItem,
 } from '@chakra-ui/react'
 import api from '../axiosConfig'
 import { Link as RouterLink } from 'react-router-dom'
 import { Button } from '@chakra-ui/react'
+import { Divider as ChakraDivider } from '@chakra-ui/react'
 
 interface Track {
   id: number
@@ -88,7 +88,7 @@ export default function CollectionDetail() {
         </Text>
       </VStack>
 
-      <Divider my={8} />
+      <ChakraDivider my={8} />
 
       <Box>
         <Heading size="lg" mb={4}>
