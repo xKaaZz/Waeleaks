@@ -1,16 +1,8 @@
-import {
-  Box,
-  Button,
-  FormControl,
-  FormLabel,
-  Input,
-  Textarea,
-  VStack,
-  useToast,
-} from '@chakra-ui/react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../axiosConfig'
+import { Box, Button, Input, Textarea, VStack, useToast } from '@chakra-ui/react'
+import { FormControl, FormLabel } from '@chakra-ui/form-control'
 
 export default function AddCollectionForm() {
   const [title, setTitle] = useState('')
