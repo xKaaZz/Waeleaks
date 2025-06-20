@@ -9,6 +9,7 @@ import {
   VStack,
   Spinner,
   Center,
+  Divider,
   List,
   ListItem,
 } from '@chakra-ui/react'
@@ -87,6 +88,7 @@ export default function CollectionDetail() {
         </Text>
       </VStack>
 
+      <Divider my={8} />
 
       <Box>
         <Heading size="lg" mb={4}>
