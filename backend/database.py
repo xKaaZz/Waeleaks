@@ -7,9 +7,9 @@ from urllib.parse import quote_plus
 
 load_dotenv()
 
-POSTGRES_USER = quote_plus(os.getenv("POSTGRES_USER", "postgres"))
-POSTGRES_PASSWORD = quote_plus(os.getenv("POSTGRES_PASSWORD", "postgres"))
-POSTGRES_DB = quote_plus(os.getenv("POSTGRES_DB", "manga_db"))
+POSTGRES_USER = quote_plus(os.getenv("POSTGRES_USER", "xkaazz"))
+POSTGRES_PASSWORD = quote_plus(os.getenv("POSTGRES_PASSWORD", "blade91"))
+POSTGRES_DB = quote_plus(os.getenv("POSTGRES_DB", "waeleaks"))
 POSTGRES_HOST = quote_plus(os.getenv("POSTGRES_HOST", "localhost"))
 POSTGRES_PORT = os.getenv("POSTGRES_PORT", "5432")
 
