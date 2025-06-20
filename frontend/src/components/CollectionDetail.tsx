@@ -99,7 +99,7 @@ export default function CollectionDetail() {
             <ListItem key={track.id}>
               <Text fontWeight="bold">{track.title}</Text>
               <audio controls style={{ width: '100%' }}>
-                <source src={`http://localhost:8001/${track.audio_url}`} type="audio/mpeg" />
+                <source src={`http://192.168.1.194:8002/${track.audio_url}`} type="audio/mpeg" />
                 Votre navigateur ne supporte pas l'audio.
               </audio>
             </ListItem>

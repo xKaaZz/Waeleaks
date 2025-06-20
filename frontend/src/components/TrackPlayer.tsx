@@ -17,7 +17,7 @@ export default function TrackPlayer({ track }: TrackPlayerProps) {
         {track.title}
       </Text>
       <audio controls style={{ width: '100%' }}>
-        <source src={`http://localhost:8001/${track.audio_url}`} type="audio/mpeg" />
+        <source src={`http://192.168.1.194:8002/${track.audio_url}`} type="audio/mpeg" />
         Votre navigateur ne supporte pas la lecture audio.
       </audio>
     </Box>

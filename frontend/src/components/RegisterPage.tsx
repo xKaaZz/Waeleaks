@@ -21,7 +21,7 @@ export default function RegisterPage() {
 
   const handleRegister = async () => {
     try {
-      await api.post('http://192.168.1.194:8001/api/register', {
+      await api.post('http://192.168.1.194:8002/api/register', {
         username,
         password,
       })
