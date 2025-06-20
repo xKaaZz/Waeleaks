@@ -32,3 +32,16 @@ class Collection(CollectionBase):
 
     class Config:
         from_attributes = True
+
+class UserCreate(BaseModel):
+    username: str
+    password: str
+    telegram_id: str | None = None
+    telegram_token: str | None = None
+
+class UserLogin(BaseModel):
+    username: str
+    password: str
+
+class Token(BaseModel):
+    token: str
