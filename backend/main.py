@@ -15,6 +15,7 @@ import models
 import schemas
 
 # --- INIT APP ---
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 models.Base.metadata.create_all(bind=engine)
 app = FastAPI()
 
@@ -26,7 +27,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.mount("/uploads", StaticFiles(directory="backend/uploads"), name="uploads")
+app.mount("/uploads", StaticFiles(directory=os.path.join(BASE_DIR, "uploads")), name="uploads")
 
 # --- AUTH ---
 SECRET_KEY = "secret"
