@@ -18,7 +18,7 @@ export default function CollectionList() {
   useEffect(() => {
     const fetchCollections = async () => {
       try {
-        const response = await api.get('/api/collections/')
+        const response = await api.get('/collections/')
         setCollections(response.data)
       } catch (error) {
         setError('Erreur lors du chargement des collections')

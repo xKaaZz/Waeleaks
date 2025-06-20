@@ -40,7 +40,7 @@ export default function CollectionDetail() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await api.get(`/api/collections/${id}`)
+        const response = await api.get(`/collections/${id}`)
         setCollection(response.data)
       } catch (error) {
         setError('Erreur lors du chargement de la collection')

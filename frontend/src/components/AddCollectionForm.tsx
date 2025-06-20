@@ -32,7 +32,7 @@ export default function AddCollectionForm() {
     }
 
     try {
-      const response = await api.post('/api/collections/', formData, {
+      const response = await api.post('/collections/', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },

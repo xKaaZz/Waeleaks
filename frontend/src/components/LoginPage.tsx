@@ -22,7 +22,7 @@ export default function LoginPage() {
 
   const handleLogin = async () => {
     try {
-      const res = await api.post('http://192.168.1.194:8002/api/login', {
+      const res = await api.post('/login', {
         username,
         password,
       })

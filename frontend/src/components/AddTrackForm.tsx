@@ -28,7 +28,7 @@ export default function AddTrackForm() {
 
     try {
       setIsLoading(true)
-      await api.post(`/api/collections/${id}/tracks`, formData, {
+      await api.post(`/collections/${id}/tracks`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
