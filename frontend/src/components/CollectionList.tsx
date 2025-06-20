@@ -1,35 +1,34 @@
 import { useEffect, useState } from 'react'
 import { SimpleGrid, Box, Heading, Text, Center, Spinner } from '@chakra-ui/react'
-import axios from 'axios'
-import MangaCard from './MangaCard'
+import CollectionCard from './CollectionCard'
 import api from '../axiosConfig'
 
-interface Manga {
+interface Collection {
   id: number
   title: string
   description: string
   cover_url: string
 }
 
-export default function MangaList() {
-  const [mangas, setMangas] = useState<Manga[]>([])
+export default function CollectionList() {
+  const [collections, setCollections] = useState<Collection[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const fetchMangas = async () => {
+    const fetchCollections = async () => {
       try {
-        const response = await api.get('http://192.168.1.194:8001/api/mangas/')
-        setMangas(response.data)
+        const response = await api.get('/api/collections/')
+        setCollections(response.data)
       } catch (error) {
-        setError('Erreur lors du chargement des mangas')
-        console.error('Error fetching mangas:', error)
+        setError('Erreur lors du chargement des collections')
+        console.error('Error fetching collections:', error)
       } finally {
         setIsLoading(false)
       }
     }
 
-    fetchMangas()
+    fetchCollections()
   }, [])
 
   if (isLoading) {
@@ -48,23 +47,23 @@ export default function MangaList() {
     )
   }
 
-  if (mangas.length === 0) {
+  if (collections.length === 0) {
     return (
       <Center h="50vh" flexDirection="column" gap={4}>
-        <Heading size="lg">Aucun manga</Heading>
-        <Text>Commencez par ajouter un manga à votre bibliothèque</Text>
+        <Heading size="lg">Aucune collection</Heading>
+        <Text>Ajoutez votre première mixtape ou album</Text>
       </Center>
     )
   }
 
   return (
     <Box>
-      <Heading mb={6}>Ma bibliothèque</Heading>
+      <Heading mb={6}>Bibliothèque de sons</Heading>
       <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} spacing={6}>
-        {mangas.map((manga) => (
-          <MangaCard key={manga.id} manga={manga} />
+        {collections.map((collection) => (
+          <CollectionCard key={collection.id} collection={collection} />
         ))}
       </SimpleGrid>
     </Box>
   )
-} 
+}

@@ -16,7 +16,7 @@ export default function Navbar() {
       <Flex maxW="container.xl" mx="auto" align="center" justify="space-between">
         <RouterLink to="/">
           <Heading size="lg" color="white">
-            Manga Lector
+            Waeleaks
           </Heading>
         </RouterLink>
 
