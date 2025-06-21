@@ -24,10 +24,7 @@ export default function TrackPlayer({ track }: TrackPlayerProps) {
           cursor: 'pointer',
         }}
       >
-        <source
-          src={`http://192.168.1.194:8002/${track.audio_url}`}
-          type="audio/mpeg"
-        />
+        <source src={`http://192.168.1.194:8002/uploads/audio/${track.audio_url.split("/").pop()}`} type="audio/mpeg" />
         Votre navigateur ne supporte pas la lecture audio.
       </audio>
     </Box>

@@ -9,6 +9,7 @@ import shutil
 import datetime
 import jwt as pyjwt
 from passlib.context import CryptContext
+from fastapi.responses import FileResponse
 
 from database import get_db, engine
 import models
@@ -165,3 +166,10 @@ def add_track_to_collection(
             pass
 
     return new_track
+
+@app.get("/uploads/audio/{filename}")
+def serve_audio(filename: str):
+    path = os.path.join(BASE_DIR, "uploads", "audio", filename)
+    if not os.path.isfile(path):
+        raise HTTPException(status_code=404, detail="Fichier introuvable")
+    return FileResponse(path, media_type="audio/mpeg")
