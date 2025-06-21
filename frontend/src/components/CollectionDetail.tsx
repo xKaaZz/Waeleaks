@@ -1,10 +1,18 @@
-// src/components/CollectionDetail.tsx
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
-  Box, Container, Image, Heading, Text,
-  Divider, VStack, Spinner, Center,
-  List, ListItem, Button
+  Box,
+  Container,
+  Image,
+  Heading,
+  Text,
+  Divider,
+  VStack,
+  Spinner,
+  Center,
+  List,
+  ListItem,
+  Button,
 } from '@chakra-ui/react'
 import api from '../axiosConfig'
 
@@ -42,7 +50,9 @@ export default function CollectionDetail() {
       }
     }
 
-    if (id) fetchData()
+    if (id) {
+      fetchData()
+    }
   }, [id])
 
   if (isLoading) {
@@ -70,8 +80,9 @@ export default function CollectionDetail() {
           maxW="300px"
           objectFit="cover"
           borderRadius="lg"
-          fallbackSrc="https://via.placeholder.com/300x400?text=No+Image"}
+          fallbackSrc="https://via.placeholder.com/300x400?text=No+Image"
         />
+
         <Heading size="2xl">{collection.title}</Heading>
         <Text fontSize="lg" color="gray.600">
           {collection.description}
@@ -81,31 +92,33 @@ export default function CollectionDetail() {
       <Divider my={8} />
 
       <Box>
-        <Heading size="lg" mb={4}>Sons</Heading>
+        <Heading size="lg" mb={4}>
+          Sons
+        </Heading>
         <List spacing={6} pb={16}>
-          {collection.tracks.map((track) => {
-            const filename = track.audio_url.split('/').pop()
-            return (
-              <ListItem key={track.id} style={{ position: 'relative', zIndex: 0 }}>
-                <Text fontWeight="bold" mb={1}>{track.title}</Text>
-                <audio
-                  controls
-                  preload="none"
-                  style={{
-                    width: '100%',
-                    minHeight: '40px',
-                    padding: '6px',
-                    position: 'relative',
-                    zIndex: 1,
-                    pointerEvents: 'auto'
-                  }}
-                >
-                  <source src={`http://192.168.1.194:8002/api/audio/${filename}`} type="audio/mpeg" />
-                  Votre navigateur ne supporte pas l'audio.
-                </audio>
-              </ListItem>
-            )
-          })}
+          {collection.tracks.map((track) => (
+            <ListItem
+              key={track.id}
+              style={{ position: 'relative', zIndex: 0 }}
+            >
+              <Text fontWeight="bold" mb={1}>{track.title}</Text>
+              <audio
+                controls
+                preload="none"
+                style={{
+                  width: '100%',
+                  minHeight: '40px',
+                  padding: '6px',
+                  position: 'relative',
+                  zIndex: 1,
+                  pointerEvents: 'auto'
+                }}
+              >
+                <source src={`http://192.168.1.194:8002/api/audio/${filename}`} type="audio/mpeg" />
+                Votre navigateur ne supporte pas l'audio.
+              </audio>
+            </ListItem>
+          ))}
         </List>
       </Box>
 
