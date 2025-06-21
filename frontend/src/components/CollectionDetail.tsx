@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import {
   Box,
   Container,
@@ -12,10 +12,9 @@ import {
   Center,
   List,
   ListItem,
+  Button,
 } from '@chakra-ui/react'
 import api from '../axiosConfig'
-import { Link as RouterLink } from 'react-router-dom'
-import { Button } from '@chakra-ui/react'
 
 interface Track {
   id: number
@@ -33,6 +32,7 @@ interface Collection {
 
 export default function CollectionDetail() {
   const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
   const [collection, setCollection] = useState<Collection | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -95,10 +95,10 @@ export default function CollectionDetail() {
         <Heading size="lg" mb={4}>
           Sons
         </Heading>
-        <List spacing={4}>
+        <List spacing={6} pb={16}>
           {collection.tracks.map((track) => (
             <ListItem key={track.id}>
-              <Text fontWeight="bold">{track.title}</Text>
+              <Text fontWeight="bold" mb={1}>{track.title}</Text>
               <audio controls style={{ width: '100%' }}>
                 <source src={`http://192.168.1.194:8002/${track.audio_url}`} type="audio/mpeg" />
                 Votre navigateur ne supporte pas l'audio.
@@ -107,10 +107,11 @@ export default function CollectionDetail() {
           ))}
         </List>
       </Box>
+
       <Box textAlign="center" mt={8}>
-        <RouterLink to={`/collection/${collection.id}/add`}>
-          <Button colorScheme="green">Ajouter un son</Button>
-        </RouterLink>
+        <Button colorScheme="green" onClick={() => navigate(`/collection/${collection.id}/add`)}>
+          Ajouter un son
+        </Button>
       </Box>
     </Container>
   )
