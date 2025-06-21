@@ -28,6 +28,7 @@ function App() {
 
                 <Route path="/add-collection" element={<AddCollectionForm />} />
                 <Route path="/add-track" element={<AddTrackForm />} />
+                <Route path="/collection/:id/add" element={<AddTrackForm />} />
 
                 <Route path="/admin" element={<AdminPanel />} />
 

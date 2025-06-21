@@ -1,3 +1,4 @@
+// src/components/AddTrackForm.tsx
 import {
   Box,
   Button,
@@ -9,9 +10,11 @@ import {
   useToast,
 } from '@chakra-ui/react'
 import { useEffect, useState } from 'react'
+import { useParams } from 'react-router-dom'
 import api from '../axiosConfig'
 
 export default function AddTrackForm() {
+  const { id: prefilledCollectionId } = useParams<{ id: string }>()
   const toast = useToast()
   const [collections, setCollections] = useState<{ id: number; title: string }[]>([])
   const [collectionId, setCollectionId] = useState<string>('') // vide = hors collection
@@ -20,8 +23,13 @@ export default function AddTrackForm() {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    api.get('/collections/').then(res => setCollections(res.data))
-  }, [])
+    api.get('/collections/').then(res => {
+      setCollections(res.data)
+      if (prefilledCollectionId) {
+        setCollectionId(prefilledCollectionId)
+      }
+    })
+  }, [prefilledCollectionId])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -37,12 +45,10 @@ export default function AddTrackForm() {
     setLoading(true)
     try {
       if (collectionId) {
-        // lié à une collection
         await api.post(`/collections/${collectionId}/tracks`, formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         })
       } else {
-        // créé hors collection
         await api.post('/tracks', formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         })
