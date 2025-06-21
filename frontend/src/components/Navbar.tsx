@@ -3,7 +3,7 @@ import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 export default function Navbar() {
-  const { username, logout } = useAuth()
+  const { username, isAdmin, logout } = useAuth()
   const navigate = useNavigate()
 
   const handleLogout = () => {
@@ -31,16 +31,13 @@ export default function Navbar() {
         <Flex gap={3}>
           {username ? (
             <>
-              <RouterLink to="/add-collection">
-                <Button variant="outline" colorScheme="whiteAlpha">
-                  Ajouter une collection
-                </Button>
-              </RouterLink>
-              <RouterLink to="/add-track">
-                <Button variant="outline" colorScheme="whiteAlpha">
-                  Ajouter un son
-                </Button>
-              </RouterLink>
+              {isAdmin && (
+                <RouterLink to="/admin">
+                  <Button variant="outline" colorScheme="yellow">
+                    Gérer bibliothèque
+                  </Button>
+                </RouterLink>
+              )}
               <RouterLink to="/update-telegram">
                 <Button variant="outline" colorScheme="whiteAlpha">
                   Lier Telegram

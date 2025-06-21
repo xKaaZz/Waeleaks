@@ -88,6 +88,7 @@ def get_user_me(user: models.User = Depends(get_current_user)):
         "username": user.username,
         "telegram_id": user.telegram_id,
         "telegram_token": user.telegram_token,
+        "is_admin": user.is_admin,  # <-- ici
     }
 
 # --- COLLECTIONS ---

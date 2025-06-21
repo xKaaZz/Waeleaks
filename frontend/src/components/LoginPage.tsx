@@ -27,10 +27,19 @@ export default function LoginPage() {
         password,
       })
 
-      login(username, res.data.token) // <-- ici utilisation de AuthContext proprement
+      const token = res.data.token
 
-      const userRes = await api.get('/user/me')
-      const { telegram_id, telegram_token } = userRes.data
+      const userRes = await api.get('/user/me', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      const { telegram_id, telegram_token, username: fetchedUsername } = userRes.data
+
+      const isAdmin = fetchedUsername === 'admin' // 💡 adapte la logique ici selon ta stratégie
+
+      login(fetchedUsername, token, isAdmin)
 
       if (!telegram_id || !telegram_token) {
         navigate('/update-telegram')

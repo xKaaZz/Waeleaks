@@ -1,8 +1,10 @@
 # models.py
 
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from database import Base
+
+
 
 class User(Base):
     __tablename__ = "users"
@@ -12,7 +14,9 @@ class User(Base):
     hashed_password = Column(String)
     telegram_id = Column(String, nullable=True)
     telegram_token = Column(String, nullable=True)
-    
+    is_admin = Column(Boolean, default=False)
+
+
 class TrackCollection(Base):
     __tablename__ = "collections"
 

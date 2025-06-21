@@ -10,6 +10,7 @@ import LoginPage from './components/LoginPage'
 import RegisterPage from './components/RegisterPage'
 import UpdateTelegramPage from './components/UpdateTelegramPage'
 import { AuthProvider } from './context/AuthContext'
+import AdminPanel from './components/AdminPanel'
 
 function App() {
   return (
@@ -30,6 +31,8 @@ function App() {
                 <Route path="/add-collection" element={<AddCollectionForm />} />
                 <Route path="/add-track" element={<AddTrackForm />} />
                 <Route path="/collection/:id/add" element={<AddTrackForm />} />
+                <Route path="/admin" element={<AdminPanel />} />
+
               </Routes>
             </Box>
           </Box>
