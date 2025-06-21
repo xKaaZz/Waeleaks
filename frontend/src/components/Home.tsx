@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Box, Button, Flex, Heading, Spacer } from '@chakra-ui/react'
 import CollectionList from './CollectionList'
-import TrackListVertical from './TrackListVertical' // ✅ Compo scrollable vertical
+import TrackList from './TrackList' // ✅ Compo scrollable vertical
 
 export default function Home() {
   const [viewMode, setViewMode] = useState<'collections' | 'tracks'>('collections')
@@ -23,7 +23,7 @@ export default function Home() {
         </Button>
       </Flex>
 
-      {viewMode === 'collections' ? <CollectionList /> : <TrackListVertical />}
+      {viewMode === 'collections' ? <CollectionList /> : <TrackList />}
     </Box>
   )
 }
