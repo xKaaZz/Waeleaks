@@ -22,24 +22,21 @@ export default function LoginPage() {
 
   const handleLogin = async () => {
     try {
-      const res = await api.post('/login', {
-        username,
-        password,
-      })
-
+      const res = await api.post('/login', { username, password })
       const token = res.data.token
 
       const userRes = await api.get('/user/me', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       })
 
-      const { telegram_id, telegram_token, username: fetchedUsername } = userRes.data
+      const {
+        telegram_id,
+        telegram_token,
+        username: fetchedUsername,
+        is_admin
+      } = userRes.data
 
-      const isAdmin = fetchedUsername === 'admin' // 💡 adapte la logique ici selon ta stratégie
-
-      login(fetchedUsername, token, isAdmin)
+      login(fetchedUsername, token, is_admin)
 
       if (!telegram_id || !telegram_token) {
         navigate('/update-telegram')
