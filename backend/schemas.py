@@ -12,7 +12,7 @@ class TrackCreate(TrackBase):
 
 class Track(TrackBase):
     id: int
-    collection_id: int
+    collection_id: Optional[int] = None
 
     class Config:
         from_attributes = True
