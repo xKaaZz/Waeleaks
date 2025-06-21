@@ -12,7 +12,7 @@ export default function UpdateTelegramPage() {
 
   const handleSave = async () => {
     try {
-      await api.patch('/user/me', {
+      await api.put('/user/telegram', {
         telegram_id: telegramId,
         telegram_token: telegramToken,
       })

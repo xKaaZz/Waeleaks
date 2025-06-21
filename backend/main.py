@@ -232,7 +232,7 @@ def delete_track(track_id: int, db: Session = Depends(get_db)):
         raise HTTPException(404, "Son introuvable")
     db.delete(tr); db.commit()
 
-@app.patch("/api/user/telegram")
+@app.put("/api/user/telegram")
 def update_telegram(
     telegram_id: str = Form(...),
     telegram_token: str = Form(...),
