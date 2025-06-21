@@ -27,7 +27,7 @@ export default function TrackPlayer({ track }: TrackPlayerProps) {
       </Text>
       <audio
         controls
-        preload="auto"
+        preload="none"
         style={{
           width: '100%',
           minHeight: '40px',

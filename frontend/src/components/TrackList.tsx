@@ -38,7 +38,7 @@ export default function TrackList() {
               <Text fontWeight="bold" mb={2}>{track.title}</Text>
               <audio
                 controls
-                preload="auto"
+                preload="none"
                 style={{
                   width: '100%',
                   minHeight: '40px',

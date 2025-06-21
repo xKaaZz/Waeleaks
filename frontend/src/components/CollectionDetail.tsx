@@ -104,7 +104,7 @@ export default function CollectionDetail() {
               <Text fontWeight="bold" mb={1}>{track.title}</Text>
               <audio
                 controls
-                preload="auto"
+                preload="none"
                 style={{
                   width: '100%',
                   minHeight: '40px',
