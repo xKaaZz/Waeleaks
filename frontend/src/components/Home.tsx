@@ -1,13 +1,13 @@
 import { useState } from 'react'
 import { Box, Button, Flex, Heading, Spacer } from '@chakra-ui/react'
 import CollectionList from './CollectionList'
-import TrackList from './TrackList'
+import TrackListVertical from './TrackListVertical' // ✅ Compo scrollable vertical
 
 export default function Home() {
   const [viewMode, setViewMode] = useState<'collections' | 'tracks'>('collections')
 
   return (
-    <Box pb={24}> {/* Ajout de padding pour que le dernier élément soit bien scrollable */}
+    <Box pb={24}> {/* padding bas pour scroll jusqu’au dernier son */}
       <Flex align="center" mb={4}>
         <Heading size="lg">
           Bibliothèque – {viewMode === 'collections' ? 'Collections' : 'Tous les sons'}
@@ -23,7 +23,7 @@ export default function Home() {
         </Button>
       </Flex>
 
-      {viewMode === 'collections' ? <CollectionList /> : <TrackList />}
+      {viewMode === 'collections' ? <CollectionList /> : <TrackListVertical />}
     </Box>
   )
 }

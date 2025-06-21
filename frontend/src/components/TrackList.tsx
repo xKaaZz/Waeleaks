@@ -1,8 +1,6 @@
-// src/components/TrackList.tsx
 import { useEffect, useState } from 'react'
 import api from '../axiosConfig'
-import { SimpleGrid, Text } from '@chakra-ui/react'
-import TrackPlayer from './TrackPlayer'
+import { Box, Text, VStack, Spinner, Center } from '@chakra-ui/react'
 
 interface Track {
   id: number
@@ -12,20 +10,55 @@ interface Track {
 
 export default function TrackList() {
   const [tracks, setTracks] = useState<Track[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    api.get('/tracks/') // ⚠️ il faut que cette route existe côté backend
+    api
+      .get('/tracks/')
       .then((res) => setTracks(res.data))
-      .catch(() => setTracks([]))
+      .catch((err) => {
+        console.error(err)
+        setError('Erreur lors du chargement des sons')
+      })
+      .finally(() => setIsLoading(false))
   }, [])
 
-  return (
-    <SimpleGrid spacing={4} columns={[1, 2, 3]}>
-      {tracks.length ? (
-        tracks.map((track) => <TrackPlayer key={track.id} track={track} />)
-      ) : (
+  if (isLoading) {
+    return (
+      <Center h="50vh">
+        <Spinner size="xl" />
+      </Center>
+    )
+  }
+
+  if (error) {
+    return (
+      <Center h="50vh">
+        <Text color="red.500">{error}</Text>
+      </Center>
+    )
+  }
+
+  if (tracks.length === 0) {
+    return (
+      <Center h="50vh">
         <Text>Aucun son disponible</Text>
-      )}
-    </SimpleGrid>
+      </Center>
+    )
+  }
+
+  return (
+    <VStack spacing={6} align="stretch" pb={24}> {/* padding bas pour scroll complet */}
+      {tracks.map((track) => (
+        <Box key={track.id} p={4} borderWidth="1px" borderRadius="md" shadow="sm">
+          <Text fontWeight="bold" mb={2}>{track.title}</Text>
+          <audio controls style={{ width: '100%' }}>
+            <source src={`http://192.168.1.194:8002/${track.audio_url}`} type="audio/mpeg" />
+            Votre navigateur ne supporte pas l'audio.
+          </audio>
+        </Box>
+      ))}
+    </VStack>
   )
 }
