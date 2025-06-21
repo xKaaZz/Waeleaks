@@ -20,8 +20,9 @@ export default function TrackPlayer({ track }: TrackPlayerProps) {
         controls
         preload="auto"
         style={{
-          width: '100%',
-          cursor: 'pointer',
+            width: '100%',
+            height: '40px', // ← augmente la hauteur
+            padding: '6px'  // ← laisse respirer le contrôle
         }}
       >
         <source src={`http://192.168.1.194:8002/uploads/audio/${track.audio_url.split("/").pop()}`} type="audio/mpeg" />
