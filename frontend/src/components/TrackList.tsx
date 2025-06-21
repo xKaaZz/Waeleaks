@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import api from '../axiosConfig'
-import { Box, Text, VStack } from '@chakra-ui/react'
+import { Box, Text, VStack, Container } from '@chakra-ui/react'
 
 interface Track {
   id: number
@@ -18,27 +18,28 @@ export default function TrackList() {
   }, [])
 
   return (
-    <Box maxH="70vh" overflowY="auto" pr={{ base: 0, md: 2 }} px={{ base: 4, sm: 6 }}>
-      <VStack spacing={6} align="stretch">
+    <Container maxW="container.sm" px={{ base: 4, md: 6 }} py={4}>
+      <VStack spacing={4} align="stretch">
         {tracks.length ? (
           tracks.map((track) => {
             const filename = track.audio_url.split('/').pop()
             return (
               <Box
                 key={track.id}
-                p={{ base: 3, md: 4 }}
+                p={3}
                 bg="white"
-                boxShadow="sm"
+                boxShadow="base"
                 borderRadius="md"
               >
-                <Text fontWeight="bold" mb={2}>{track.title}</Text>
+                <Text fontWeight="semibold" fontSize="md" mb={1} noOfLines={1}>
+                  {track.title}
+                </Text>
                 <audio
                   controls
                   preload="none"
                   style={{
                     width: '100%',
-                    minHeight: '40px',
-                    padding: '6px',
+                    minHeight: '38px',
                   }}
                 >
                   <source src={`http://192.168.1.194:8002/api/audio/${filename}`} type="audio/mpeg" />
@@ -51,6 +52,6 @@ export default function TrackList() {
           <Text>Aucun son disponible</Text>
         )}
       </VStack>
-    </Box>
+    </Container>
   )
 }
