@@ -11,6 +11,8 @@ interface TrackPlayerProps {
 }
 
 export default function TrackPlayer({ track }: TrackPlayerProps) {
+  const filename = track.audio_url.split('/').pop()
+
   return (
     <Box
       borderWidth="1px"
@@ -37,7 +39,7 @@ export default function TrackPlayer({ track }: TrackPlayerProps) {
           pointerEvents: 'auto'
         }}
       >
-        <source src={`http://192.168.1.194:8002/uploads/audio/${track.audio_url.split("/").pop()}`} type="audio/mpeg" />
+        <source src={`http://192.168.1.194:8002/api/audio/${filename}`} type="audio/mpeg" />
         Votre navigateur ne supporte pas la lecture audio.
       </audio>
     </Box>
