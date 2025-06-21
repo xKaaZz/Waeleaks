@@ -2,6 +2,7 @@ import { ChakraProvider, Box } from '@chakra-ui/react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import CollectionList from './components/CollectionList'
+import Home from './components/Home'
 import CollectionDetail from './components/CollectionDetail'
 import AddCollectionForm from './components/AddCollectionForm'
 import AddTrackForm from './components/AddTrackForm'
@@ -19,7 +20,7 @@ function App() {
             <Navbar />
             <Box px={6} py={4} maxW="100%">
               <Routes>
-                <Route path="/" element={<CollectionList />} />
+                <Route path="/" element={<Home />} />
                 <Route path="/collection/:id" element={<CollectionDetail />} />
                 <Route path="/collection/:id/add" element={<AddTrackForm />} />
                 <Route path="/add" element={<AddCollectionForm />} />
