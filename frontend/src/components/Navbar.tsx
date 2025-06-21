@@ -1,7 +1,20 @@
-// ✅ Navbar.tsx responsive
 import {
-  Box, Flex, Button, Heading, Text, Spacer, IconButton, useDisclosure, Drawer,
-  DrawerOverlay, DrawerContent, DrawerCloseButton, DrawerBody, VStack, Show, Hide
+  Box,
+  Flex,
+  Button,
+  Heading,
+  Text,
+  Spacer,
+  IconButton,
+  useDisclosure,
+  Drawer,
+  DrawerOverlay,
+  DrawerContent,
+  DrawerCloseButton,
+  DrawerBody,
+  VStack,
+  Hide,
+  Show,
 } from '@chakra-ui/react'
 import { HamburgerIcon } from '@chakra-ui/icons'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
@@ -18,29 +31,41 @@ export default function Navbar() {
   }
 
   return (
-    <Box bg="blue.600" px={4} py={3} w="100%">
-      <Flex align="center" maxW="1200px" mx="auto">
+    <Box bg="blue.600" px={{ base: 4, md: 8 }} py={3} w="100%">
+      <Flex align="center" maxW="1200px" mx="auto" w="100%">
         <RouterLink to="/">
-          <Heading size="lg" color="white">Waeleaks</Heading>
+          <Heading size="lg" color="white">
+            Waeleaks
+          </Heading>
         </RouterLink>
 
         <Spacer />
 
         {/* Desktop */}
-        <Hide below='md'>
+        <Hide below="md">
           <Flex gap={3} align="center">
-            {username && <Text color="white">Bonjour, {username}</Text>}
+            {username && (
+              <Text color="white" whiteSpace="nowrap">
+                Bonjour, {username}
+              </Text>
+            )}
             {username ? (
               <>
                 {isAdmin && (
                   <RouterLink to="/admin">
-                    <Button variant="outline" colorScheme="yellow">Gérer bibliothèque</Button>
+                    <Button variant="outline" colorScheme="yellow">
+                      Gérer bibliothèque
+                    </Button>
                   </RouterLink>
                 )}
                 <RouterLink to="/update-telegram">
-                  <Button variant="outline" colorScheme="whiteAlpha">Lier Telegram</Button>
+                  <Button variant="outline" colorScheme="whiteAlpha">
+                    Lier Telegram
+                  </Button>
                 </RouterLink>
-                <Button colorScheme="red" onClick={onLogout}>Déconnexion</Button>
+                <Button colorScheme="red" onClick={onLogout}>
+                  Déconnexion
+                </Button>
               </>
             ) : (
               <>
@@ -56,7 +81,7 @@ export default function Navbar() {
         </Hide>
 
         {/* Mobile */}
-        <Show below='md'>
+        <Show below="md">
           <IconButton
             aria-label="Menu"
             icon={<HamburgerIcon />}
@@ -74,13 +99,19 @@ export default function Navbar() {
                     <>
                       {isAdmin && (
                         <RouterLink to="/admin">
-                          <Button variant="outline" colorScheme="yellow" w="full">Gérer bibliothèque</Button>
+                          <Button variant="outline" colorScheme="yellow" w="full">
+                            Gérer bibliothèque
+                          </Button>
                         </RouterLink>
                       )}
                       <RouterLink to="/update-telegram">
-                        <Button variant="outline" colorScheme="blue" w="full">Lier Telegram</Button>
+                        <Button variant="outline" colorScheme="blue" w="full">
+                          Lier Telegram
+                        </Button>
                       </RouterLink>
-                      <Button colorScheme="red" onClick={onLogout} w="full">Déconnexion</Button>
+                      <Button colorScheme="red" onClick={onLogout} w="full">
+                        Déconnexion
+                      </Button>
                     </>
                   ) : (
                     <>

@@ -15,31 +15,27 @@ export default function TrackPlayer({ track }: TrackPlayerProps) {
 
   return (
     <Box
-      borderWidth="1px"
-      borderRadius="lg"
-      p={4}
+      w="100%"              // plein écran dans la zone px={4/md:8} de Home
       bg="white"
-      shadow="md"
-      width="100%"
-      position="relative"
-      zIndex={0}
+      boxShadow="sm"
+      borderRadius="md"
+      p={{ base: 3, md: 4 }}
     >
-      <Text fontWeight="bold" mb={2}>
+      <Text fontWeight="semibold" mb={2} noOfLines={1}>
         {track.title}
       </Text>
       <audio
         controls
         preload="none"
         style={{
-          width: '100%',
+          width: '100%',     // occupe tout l’espace
           minHeight: '40px',
-          padding: '6px',
-          position: 'relative',
-          zIndex: 1,
-          pointerEvents: 'auto'
         }}
       >
-        <source src={`http://192.168.1.194:8002/api/audio/${filename}`} type="audio/mpeg" />
+        <source
+          src={`http://192.168.1.194:8002/api/audio/${filename}`}
+          type="audio/mpeg"
+        />
         Votre navigateur ne supporte pas la lecture audio.
       </audio>
     </Box>

@@ -1,13 +1,5 @@
 import { useState } from 'react'
-import {
-  Box,
-  Button,
-  Flex,
-  Heading,
-  Spacer,
-  Stack,
-} from '@chakra-ui/react'
-import Navbar from '../components/Navbar'
+import { Box, Button, Flex, Heading, Spacer, Stack } from '@chakra-ui/react'
 import CollectionList from '../components/CollectionList'
 import TrackList from '../components/TrackList'
 
@@ -15,11 +7,8 @@ export default function Home() {
   const [viewMode, setViewMode] = useState<'collections' | 'tracks'>('tracks')
 
   return (
-    <Box bg="gray.50" minH="100vh" w="100%">
-      {/* Navbar full-width avec px={4} */}
-      <Navbar />
-
-      {/* Contenu : même px={4} que la navbar */}
+    <Box bg="gray.50" w="100%" minH="100vh">
+      {/* Même padding que ta Navbar (px 4/md:8) */}
       <Box px={{ base: 4, md: 8 }} pt={4}>
         <Stack
           direction={{ base: 'column', md: 'row' }}
@@ -46,7 +35,6 @@ export default function Home() {
           </Button>
         </Stack>
 
-        {/* Ici tes cards sont full-width dans la zone px={4} */}
         {viewMode === 'collections' ? (
           <CollectionList />
         ) : (
