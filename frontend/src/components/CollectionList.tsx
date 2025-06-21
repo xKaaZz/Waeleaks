@@ -58,7 +58,6 @@ export default function CollectionList() {
 
   return (
     <Box>
-      <Heading mb={6}>Bibliothèque de sons</Heading>
       <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} spacing={6}>
         {collections.map((collection) => (
           <CollectionCard key={collection.id} collection={collection} />
