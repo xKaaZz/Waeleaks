@@ -26,6 +26,8 @@ function App() {
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/update-telegram" element={<UpdateTelegramPage />} />
+                <Route path="/add-collection" element={<AddCollectionForm />} />
+                <Route path="/collection/:id/add" element={<AddTrackForm />} />
               </Routes>
             </Box>
           </Box>
