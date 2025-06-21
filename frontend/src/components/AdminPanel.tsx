@@ -17,7 +17,16 @@ export default function AdminPanel() {
         <Button onClick={() => navigate('/collection/1/add')} colorScheme="blue" width="full">
           Ajouter un son dans une collection
         </Button>
-        {/* Ajoute ici d'autres boutons pour la suppression plus tard */}
+
+        <Button onClick={() => navigate('/delete-track')} colorScheme="red" variant="outline" width="full">
+          Supprimer un son
+        </Button>
+        <Button onClick={() => navigate('/delete-track-from-collection')} colorScheme="red" variant="outline" width="full">
+          Supprimer un son d'une collection
+        </Button>
+        <Button onClick={() => navigate('/delete-collection')} colorScheme="red" variant="outline" width="full">
+          Supprimer une collection
+        </Button>
       </VStack>
     </Box>
   )

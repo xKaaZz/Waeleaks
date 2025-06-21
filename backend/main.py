@@ -178,3 +178,25 @@ def serve_audio(filename: str):
 @app.get("/api/tracks/", response_model=List[schemas.Track])
 def list_tracks(db: Session = Depends(get_db)):
     return db.query(models.Track).all()
+
+@app.delete("/api/collections/{collection_id}", status_code=204)
+def delete_collection(collection_id: int, db: Session = Depends(get_db)):
+    collection = db.query(models.TrackCollection).filter_by(id=collection_id).first()
+    if not collection:
+        raise HTTPException(status_code=404, detail="Collection introuvable")
+
+    if db.query(models.Track).filter_by(collection_id=collection_id).count() > 0:
+        raise HTTPException(status_code=400, detail="Impossible de supprimer une collection non vide")
+
+    db.delete(collection)
+    db.commit()
+    return
+
+@app.delete("/api/tracks/{track_id}", status_code=204)
+def delete_track(track_id: int, db: Session = Depends(get_db)):
+    track = db.query(models.Track).filter_by(id=track_id).first()
+    if not track:
+        raise HTTPException(status_code=404, detail="Son introuvable")
+    db.delete(track)
+    db.commit()
+    return
