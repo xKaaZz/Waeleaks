@@ -34,6 +34,7 @@ class Track(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String)
     audio_url = Column(String)
-    collection_id = Column(Integer, ForeignKey("collections.id"))
+    collection_id = Column(Integer, ForeignKey("collections.id"), nullable=True)
+
 
     collection = relationship("TrackCollection", back_populates="tracks")

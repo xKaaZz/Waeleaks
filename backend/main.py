@@ -168,6 +168,45 @@ def add_track_to_collection(
 
     return new_track
 
+@app.post("/api/tracks", response_model=schemas.Track)
+def add_standalone_track(
+    title: str = Form(...),
+    audio: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+    os.makedirs("backend/uploads/audio", exist_ok=True)
+    audio_path = f"uploads/audio/{audio.filename}"
+    with open(audio_path, "wb") as buffer:
+        shutil.copyfileobj(audio.file, buffer)
+
+    new_track = models.Track(
+        title=title,
+        audio_url=audio_path,
+        collection_id=None  # pas lié à une collection
+    )
+    db.add(new_track)
+    db.commit()
+    db.refresh(new_track)
+
+    # 🔔 Notification Telegram facultative (si tu veux notifier même les sons hors collection)
+    users = db.query(models.User).filter(
+        models.User.telegram_id != None,
+        models.User.telegram_token != None
+    ).all()
+
+    for user in users:
+        try:
+            message = f"🎶 Nouveau son ajouté : {title}"
+            requests.post(
+                f"https://api.telegram.org/bot{user.telegram_token}/sendMessage",
+                data={"chat_id": user.telegram_id, "text": message}
+            )
+        except:
+            pass
+
+    return new_track
+
+
 @app.get("/uploads/audio/{filename}")
 def serve_audio(filename: str):
     path = os.path.join(BASE_DIR, "uploads", "audio", filename)

@@ -14,7 +14,7 @@ import api from '../axiosConfig'
 export default function AddTrackForm() {
   const toast = useToast()
   const [collections, setCollections] = useState<{ id: number; title: string }[]>([])
-  const [collectionId, setCollectionId] = useState<string>('')
+  const [collectionId, setCollectionId] = useState<string>('') // vide = hors collection
   const [title, setTitle] = useState('')
   const [file, setFile] = useState<File | null>(null)
   const [loading, setLoading] = useState(false)
@@ -25,23 +25,38 @@ export default function AddTrackForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!collectionId || !title || !file) {
+    if (!title || !file) {
       toast({ title: 'Tous les champs sont requis', status: 'warning' })
       return
     }
-    const fd = new FormData()
-    fd.append('title', title)
-    fd.append('audio', file)
+
+    const formData = new FormData()
+    formData.append('title', title)
+    formData.append('audio', file)
 
     setLoading(true)
     try {
-      await api.post(`/collections/${collectionId}/tracks`, fd, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      })
+      if (collectionId) {
+        // lié à une collection
+        await api.post(`/collections/${collectionId}/tracks`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        })
+      } else {
+        // créé hors collection
+        await api.post('/tracks', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        })
+      }
       toast({ title: 'Son ajouté !', status: 'success' })
-      setTitle(''); setFile(null); setCollectionId('')
+      setTitle('')
+      setFile(null)
+      setCollectionId('')
     } catch (err: any) {
-      toast({ title: 'Erreur à l’ajout', description: err.response?.data?.detail, status: 'error' })
+      toast({
+        title: 'Erreur à l’ajout',
+        description: err.response?.data?.detail || err.message,
+        status: 'error',
+      })
     } finally {
       setLoading(false)
     }
@@ -50,16 +65,18 @@ export default function AddTrackForm() {
   return (
     <Box maxW="lg" mx="auto" mt={8}>
       <form onSubmit={handleSubmit}>
-        <VStack spacing={4} align="stretch">
-          <FormControl isRequired>
-            <FormLabel>Collection</FormLabel>
+        <VStack spacing={6} align="stretch">
+          <FormControl>
+            <FormLabel>Collection (facultatif)</FormLabel>
             <Select
-              placeholder="Sélectionnez une collection"
+              placeholder="Aucune collection"
               value={collectionId}
               onChange={e => setCollectionId(e.target.value)}
             >
               {collections.map(c => (
-                <option key={c.id} value={c.id}>{c.title}</option>
+                <option key={c.id} value={c.id}>
+                  {c.title}
+                </option>
               ))}
             </Select>
           </FormControl>
@@ -67,9 +84,9 @@ export default function AddTrackForm() {
           <FormControl isRequired>
             <FormLabel>Titre du son</FormLabel>
             <Input
+              placeholder="Titre…"
               value={title}
               onChange={e => setTitle(e.target.value)}
-              placeholder="Titre…"
             />
           </FormControl>
 
