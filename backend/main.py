@@ -109,7 +109,7 @@ def create_collection(
     if cover:
         os.makedirs("backend/uploads/covers", exist_ok=True)
         cover_path = f"uploads/covers/{cover.filename}"
-        with open(f"backend/{cover_path}", "wb") as buffer:
+        with open(f"{cover_path}", "wb") as buffer:
             shutil.copyfileobj(cover.file, buffer)
 
     new_collection = models.TrackCollection(
@@ -132,7 +132,7 @@ def add_track_to_collection(
 ):
     os.makedirs("backend/uploads/audio", exist_ok=True)
     audio_path = f"uploads/audio/{audio.filename}"
-    with open(f"backend/{audio_path}", "wb") as buffer:
+    with open(f"{audio_path}", "wb") as buffer:
         shutil.copyfileobj(audio.file, buffer)
 
     new_track = models.Track(
