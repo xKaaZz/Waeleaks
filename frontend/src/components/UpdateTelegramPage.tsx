@@ -12,18 +12,21 @@ export default function UpdateTelegramPage() {
 
   const handleSave = async () => {
     try {
-      await api.put('/user/telegram', {
-        telegram_id: telegramId,
-        telegram_token: telegramToken,
+      const formData = new FormData()
+      formData.append("telegram_id", telegramId)
+      formData.append("telegram_token", telegramToken)
+
+      await api.put("/user/telegram", formData, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       })
-      toast({ title: 'Infos Telegram mises à jour !', status: 'success' })
-      navigate('/') // Retour à la home
+      toast({ status: "success", title: "Enregistré" })
     } catch (err: any) {
-      toast({
-        title: 'Erreur',
-        description: err.response?.data?.detail || 'Erreur lors de la mise à jour',
-        status: 'error',
-      })
+      const msg =
+        err?.response?.data?.detail ??
+        (Array.isArray(err?.response?.data) ? err.response.data.map(e => e.msg).join(", ") : "Erreur inconnue")
+      toast({ status: "error", title: "Erreur", description: msg })
     }
   }
 
