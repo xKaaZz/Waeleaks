@@ -26,7 +26,7 @@ export default function CollectionCard({ collection }: Props) {
         position="relative"
       >
         <Image
-          src={collection.cover_url}
+          src={`http://192.168.1.194:8002/${collection.cover_url}`}
           alt={collection.title}
           w="100%"
           h="300px"
