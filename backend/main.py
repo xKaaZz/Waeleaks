@@ -123,9 +123,26 @@ def add_track_to_collection(
     ap = f"uploads/audio/{audio.filename}"
     with open(os.path.join(BASE_DIR, ap), "wb") as buf:
         shutil.copyfileobj(audio.file, buf)
+
     tr = models.Track(title=title, audio_url=ap, collection_id=collection_id)
     db.add(tr); db.commit(); db.refresh(tr)
-    # Notification Telegram...
+
+    # 🔔 Notif Telegram
+    col = db.query(models.TrackCollection).get(collection_id)
+    users = db.query(models.User).filter(
+        models.User.telegram_id != None,
+        models.User.telegram_token != None
+    ).all()
+    for user in users:
+        try:
+            msg = f"🎵 Nouveau son dans « {col.title} » : {title}"
+            requests.post(
+                f"https://api.telegram.org/bot{user.telegram_token}/sendMessage",
+                data={"chat_id": user.telegram_id, "text": msg}
+            )
+        except:
+            pass
+
     return tr
 
 @app.post("/api/tracks", response_model=schemas.Track)
@@ -138,8 +155,25 @@ def add_standalone_track(
     ap = f"uploads/audio/{audio.filename}"
     with open(os.path.join(BASE_DIR, ap), "wb") as buf:
         shutil.copyfileobj(audio.file, buf)
+
     tr = models.Track(title=title, audio_url=ap, collection_id=None)
     db.add(tr); db.commit(); db.refresh(tr)
+
+    # 🔔 Notif Telegram (son seul)
+    users = db.query(models.User).filter(
+        models.User.telegram_id != None,
+        models.User.telegram_token != None
+    ).all()
+    for user in users:
+        try:
+            msg = f"🎶 Nouveau son ajouté : {title}"
+            requests.post(
+                f"https://api.telegram.org/bot{user.telegram_token}/sendMessage",
+                data={"chat_id": user.telegram_id, "text": msg}
+            )
+        except:
+            pass
+
     return tr
 
 @app.get("/api/audio/{filename}")
@@ -197,3 +231,15 @@ def delete_track(track_id: int, db: Session = Depends(get_db)):
     if not tr:
         raise HTTPException(404, "Son introuvable")
     db.delete(tr); db.commit()
+
+@app.put("/api/user/telegram")
+def update_telegram(
+    telegram_id: str = Form(...),
+    telegram_token: str = Form(...),
+    user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    user.telegram_id = telegram_id
+    user.telegram_token = telegram_token
+    db.commit()
+    return {"message": "Infos Telegram mises à jour"}
