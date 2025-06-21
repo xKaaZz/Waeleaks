@@ -96,29 +96,29 @@ export default function CollectionDetail() {
           Sons
         </Heading>
         <List spacing={6} pb={16}>
-          {collection.tracks.map((track) => (
-            <ListItem
-              key={track.id}
-              style={{ position: 'relative', zIndex: 0 }}
-            >
-              <Text fontWeight="bold" mb={1}>{track.title}</Text>
-              <audio
-                controls
-                preload="none"
-                style={{
-                  width: '100%',
-                  minHeight: '40px',
-                  padding: '6px',
-                  position: 'relative',
-                  zIndex: 1,
-                  pointerEvents: 'auto'
-                }}
-              >
-                <source src={`http://192.168.1.194:8002/api/audio/${filename}`} type="audio/mpeg" />
-                Votre navigateur ne supporte pas l'audio.
-              </audio>
-            </ListItem>
-          ))}
+          {collection.tracks.map((track) => {
+            const filename = track.audio_url.split('/').pop()
+            return (
+              <ListItem key={track.id} style={{ position: 'relative', zIndex: 0 }}>
+                <Text fontWeight="bold" mb={1}>{track.title}</Text>
+                <audio
+                  controls
+                  preload="none"
+                  style={{
+                    width: '100%',
+                    minHeight: '40px',
+                    padding: '6px',
+                    position: 'relative',
+                    zIndex: 1,
+                    pointerEvents: 'auto'
+                  }}
+                >
+                  <source src={`http://192.168.1.194:8002/api/audio/${filename}`} type="audio/mpeg" />
+                  Votre navigateur ne supporte pas l'audio.
+                </audio>
+              </ListItem>
+            )
+          })}
         </List>
       </Box>
 
