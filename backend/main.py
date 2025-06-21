@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException, Depends, UploadFile, File, Form, Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from typing import List
 from pydantic import BaseModel
@@ -9,7 +10,8 @@ import shutil
 import datetime
 import jwt as pyjwt
 from passlib.context import CryptContext
-from fastapi.responses import FileResponse
+from starlette.requests import Request
+import requests
 
 from database import get_db, engine
 import models
@@ -20,10 +22,9 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 models.Base.metadata.create_all(bind=engine)
 app = FastAPI(redirect_slashes=True)
 
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://192.168.1.194:5175", "http://localhost:5175"],  # ajuste si besoin
+    allow_origins=["http://192.168.1.194:5175", "http://localhost:5175"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -34,6 +35,7 @@ app.mount(
     StaticFiles(directory=os.path.join(BASE_DIR, "uploads"), html=True),
     name="uploads"
 )
+
 # --- AUTH ---
 SECRET_KEY = "secret"
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -89,7 +91,7 @@ def get_user_me(user: models.User = Depends(get_current_user)):
         "username": user.username,
         "telegram_id": user.telegram_id,
         "telegram_token": user.telegram_token,
-        "is_admin": user.is_admin,  # <-- ici
+        "is_admin": user.is_admin,
     }
 
 # --- COLLECTIONS ---
@@ -150,7 +152,6 @@ def add_track_to_collection(
     db.commit()
     db.refresh(new_track)
 
-    # 🔔 Notification Telegram (si activée)
     collection = db.query(models.TrackCollection).filter_by(id=collection_id).first()
     users = db.query(models.User).filter(
         models.User.telegram_id != None,
@@ -183,13 +184,12 @@ def add_standalone_track(
     new_track = models.Track(
         title=title,
         audio_url=audio_path,
-        collection_id=None  # pas lié à une collection
+        collection_id=None
     )
     db.add(new_track)
     db.commit()
     db.refresh(new_track)
 
-    # 🔔 Notification Telegram facultative (si tu veux notifier même les sons hors collection)
     users = db.query(models.User).filter(
         models.User.telegram_id != None,
         models.User.telegram_token != None
@@ -207,13 +207,47 @@ def add_standalone_track(
 
     return new_track
 
-
 @app.get("/uploads/audio/{filename}")
-def serve_audio(filename: str):
+def serve_audio(filename: str, request: Request):
     path = os.path.join(BASE_DIR, "uploads", "audio", filename)
     if not os.path.isfile(path):
         raise HTTPException(status_code=404, detail="Fichier introuvable")
-    return FileResponse(path, media_type="audio/mpeg")
+
+    file_size = os.path.getsize(path)
+    range_header = request.headers.get('range')
+
+    def iterfile(start=0):
+        with open(path, 'rb') as f:
+            f.seek(start)
+            while chunk := f.read(4096):
+                yield chunk
+
+    if range_header:
+        range_value = range_header.strip().lower().replace("bytes=", "")
+        range_start, range_end = range_value.split("-")
+        range_start = int(range_start)
+        range_end = int(range_end) if range_end else file_size - 1
+        content_length = (range_end - range_start) + 1
+
+        return StreamingResponse(
+            iterfile(start=range_start),
+            status_code=206,
+            headers={
+                "Content-Range": f"bytes {range_start}-{range_end}/{file_size}",
+                "Accept-Ranges": "bytes",
+                "Content-Length": str(content_length),
+                "Content-Type": "audio/mpeg",
+            }
+        )
+
+    return StreamingResponse(
+        iterfile(),
+        headers={
+            "Content-Length": str(file_size),
+            "Content-Type": "audio/mpeg",
+            "Accept-Ranges": "bytes",
+        }
+    )
 
 @app.get("/api/tracks/", response_model=List[schemas.Track])
 def list_tracks(db: Session = Depends(get_db)):
