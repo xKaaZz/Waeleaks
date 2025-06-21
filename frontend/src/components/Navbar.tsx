@@ -1,4 +1,4 @@
-import { Box, Flex, Button, Heading, Text } from '@chakra-ui/react'
+import { Box, Flex, Button, Heading, Text, Spacer } from '@chakra-ui/react'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
@@ -12,23 +12,42 @@ export default function Navbar() {
   }
 
   return (
-    <Box bg="blue.600" px={8} py={4} width="100%">
-      <Flex maxW="100%" align="center" justify="space-between">
+    <Box bg="blue.600" px={8} py={4} w="100%">
+      <Flex align="center" maxW="1200px" mx="auto" gap={6}>
+        {/* Logo + titre */}
         <RouterLink to="/">
           <Heading size="lg" color="white">
             Waeleaks
           </Heading>
         </RouterLink>
 
-        <Flex align="center" gap={4} flexWrap="wrap">
+        {/* Username affiché à droite du titre */}
+        {username && (
+          <Text color="white" fontWeight="medium">
+            Bonjour, {username}
+          </Text>
+        )}
+
+        <Spacer />
+
+        {/* Actions utilisateur */}
+        <Flex gap={3}>
           {username ? (
             <>
-              <Text color="white">Bonjour, {username}</Text>
               <RouterLink to="/add-collection">
-                <Button colorScheme="whiteAlpha" variant="outline">Ajouter une collection</Button>
+                <Button variant="outline" colorScheme="whiteAlpha">
+                  Ajouter une collection
+                </Button>
               </RouterLink>
               <RouterLink to="/add-track">
-                <Button colorScheme="whiteAlpha" variant="outline">Ajouter un son</Button>
+                <Button variant="outline" colorScheme="whiteAlpha">
+                  Ajouter un son
+                </Button>
+              </RouterLink>
+              <RouterLink to="/update-telegram">
+                <Button variant="outline" colorScheme="whiteAlpha">
+                  Lier Telegram
+                </Button>
               </RouterLink>
               <Button colorScheme="red" onClick={handleLogout}>
                 Déconnexion
@@ -37,10 +56,14 @@ export default function Navbar() {
           ) : (
             <>
               <RouterLink to="/login">
-                <Button colorScheme="whiteAlpha">Connexion</Button>
+                <Button variant="solid" colorScheme="whiteAlpha">
+                  Connexion
+                </Button>
               </RouterLink>
               <RouterLink to="/register">
-                <Button colorScheme="whiteAlpha">Inscription</Button>
+                <Button variant="solid" colorScheme="whiteAlpha">
+                  Inscription
+                </Button>
               </RouterLink>
             </>
           )}
