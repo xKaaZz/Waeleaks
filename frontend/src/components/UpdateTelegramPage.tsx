@@ -1,9 +1,11 @@
 // src/components/UpdateTelegramPage.tsx
+import { useAuth } from '../context/AuthContext'
 import { useState } from 'react'
 import { Box, Button, FormControl, FormLabel, Input, Heading, VStack, useToast } from '@chakra-ui/react'
 import { useNavigate } from 'react-router-dom'
 import api from '../axiosConfig'
 export default function UpdateTelegramPage() {
+  const { token } = useAuth()
   const [telegramId, setTelegramId] = useState('')
   const [telegramToken, setTelegramToken] = useState('')
   const navigate = useNavigate()
@@ -18,7 +20,6 @@ export default function UpdateTelegramPage() {
       await api.put("/user/telegram", formData, {
         headers: {
           Authorization: `Bearer ${token}`
-          // ❌ surtout PAS de Content-Type ici, Axios s’en charge automatiquement !
         }
       })
       toast({ status: "success", title: "Enregistré" })
