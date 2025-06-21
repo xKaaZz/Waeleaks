@@ -1,3 +1,4 @@
+// src/components/CollectionDetail.tsx
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
@@ -72,12 +73,12 @@ export default function CollectionDetail() {
   }
 
   return (
-    <Container maxW="container.md" px={4}>
+    <Container maxW={{ base: 'full', md: 'container.md' }} px={{ base: 4, md: 8 }}>
       <VStack spacing={6} align="center" textAlign="center">
         <Image
           src={`http://192.168.1.194:8002/${collection.cover_url}`}
           alt={collection.title}
-          maxW="300px"
+          maxW={{ base: 'full', sm: '300px' }}
           objectFit="cover"
           borderRadius="lg"
           fallbackSrc="https://via.placeholder.com/300x400?text=No+Image"
@@ -92,7 +93,7 @@ export default function CollectionDetail() {
       <Divider my={8} />
 
       <Box>
-        <Heading size="lg" mb={4}>
+        <Heading size="lg" mb={4} textAlign={{ base: 'center', md: 'left' }}>
           Sons
         </Heading>
         <List spacing={6} pb={16}>
