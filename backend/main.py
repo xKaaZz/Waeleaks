@@ -27,8 +27,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.mount("/uploads", StaticFiles(directory=os.path.join(BASE_DIR, "uploads")), name="uploads")
-
+app.mount(
+    "/uploads",
+    StaticFiles(directory=os.path.join(BASE_DIR, "uploads"), html=True),
+    name="uploads"
+)
 # --- AUTH ---
 SECRET_KEY = "secret"
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
