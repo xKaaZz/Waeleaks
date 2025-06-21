@@ -6,13 +6,16 @@ export default function Navbar() {
   const { username, isAdmin, logout } = useAuth()
   const navigate = useNavigate()
 
+  const onLogout = () => {
+    logout()
+    navigate('/login')
+  }
+
   return (
     <Box bg="blue.600" px={8} py={4} w="100%">
       <Flex align="center" maxW="1200px" mx="auto" gap={6}>
         <RouterLink to="/">
-          <Heading size="lg" color="white">
-            Waeleaks
-          </Heading>
+          <Heading size="lg" color="white">Waeleaks</Heading>
         </RouterLink>
 
         {username && (
@@ -22,7 +25,6 @@ export default function Navbar() {
         )}
 
         <Spacer />
-
         <Flex gap={3}>
           {username ? (
             <>
@@ -38,7 +40,7 @@ export default function Navbar() {
                   Lier Telegram
                 </Button>
               </RouterLink>
-              <Button colorScheme="red" onClick={() => { logout(); navigate('/login') }}>
+              <Button colorScheme="red" onClick={onLogout}>
                 Déconnexion
               </Button>
             </>

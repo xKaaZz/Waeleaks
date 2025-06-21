@@ -1,12 +1,14 @@
 import { Box, Heading, VStack, Button, Select, useToast } from '@chakra-ui/react'
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import api from '../axiosConfig'
 
 export default function AdminPanel() {
+  const navigate = useNavigate()
   const toast = useToast()
   const [collections, setCollections] = useState<any[]>([])
-  const [selectedTrackId, setSelectedTrackId] = useState<string>('')
-  const [selectedCollectionId, setSelectedCollectionId] = useState<string>('')
+  const [selectedTrackId, setSelectedTrackId] = useState('')
+  const [selectedCollectionId, setSelectedCollectionId] = useState('')
 
   useEffect(() => {
     api.get('/collections/').then(res => setCollections(res.data))
@@ -24,8 +26,8 @@ export default function AdminPanel() {
     try {
       await api.delete(`/collections/${selectedCollectionId}`)
       toast({ title: 'Collection supprimée', status: 'success' })
-      setSelectedCollectionId('')
       setCollections(cols => cols.filter(c => c.id !== Number(selectedCollectionId)))
+      setSelectedCollectionId('')
     } catch (err: any) {
       toast({ title: 'Erreur', description: err.response?.data?.detail, status: 'error' })
     }
@@ -35,14 +37,11 @@ export default function AdminPanel() {
     <Box maxW="container.md" mx="auto" mt={8}>
       <Heading mb={6}>Panneau d'administration</Heading>
       <VStack spacing={4} align="stretch">
-        <Button colorScheme="blue" onClick={() => window.location.assign('/add-collection')}>
+        <Button colorScheme="blue" onClick={() => navigate('/add-collection')}>
           Ajouter une collection
         </Button>
-        <Button colorScheme="blue" onClick={() => window.location.assign('/add-track')}>
-          Ajouter un son (hors collection)
-        </Button>
-        <Button colorScheme="blue" onClick={() => window.location.assign('/add-track-to-collection')}>
-          Ajouter un son dans une collection
+        <Button colorScheme="blue" onClick={() => navigate('/add-track')}>
+          Ajouter un son
         </Button>
 
         <Select
@@ -59,7 +58,7 @@ export default function AdminPanel() {
           )}
         </Select>
         <Button colorScheme="red" onClick={handleDeleteTrack}>
-          Supprimer le son sélectionné
+          Supprimer le son
         </Button>
 
         <Select
@@ -67,14 +66,12 @@ export default function AdminPanel() {
           value={selectedCollectionId}
           onChange={e => setSelectedCollectionId(e.target.value)}
         >
-          {collections.map(col => (
-            <option key={col.id} value={col.id}>
-              {col.title}
-            </option>
+          {collections.map(c => (
+            <option key={c.id} value={c.id}>{c.title}</option>
           ))}
         </Select>
         <Button colorScheme="red" onClick={handleDeleteCollection}>
-          Supprimer la collection sélectionnée
+          Supprimer la collection
         </Button>
       </VStack>
     </Box>
