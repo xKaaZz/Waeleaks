@@ -109,7 +109,7 @@ export default function CollectionDetail() {
       </Box>
 
       <Box textAlign="center" mt={8}>
-        <Button colorScheme="green" onClick={() => navigate(`/collection/${collection.id}/add-track`)}>
+        <Button colorScheme="green" onClick={() => navigate(`/collection/${collection.id}/add`)}>
           Ajouter un son
         </Button>
       </Box>
