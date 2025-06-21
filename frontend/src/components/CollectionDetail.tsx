@@ -1,4 +1,3 @@
-// src/components/CollectionDetail.tsx
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
@@ -73,19 +72,19 @@ export default function CollectionDetail() {
   }
 
   return (
-    <Container maxW={{ base: 'full', md: 'container.md' }} px={{ base: 4, md: 8 }}>
-      <VStack spacing={6} align="center" textAlign="center">
+    <Container maxW={{ base: '100%', md: 'container.md' }} px={{ base: 4, md: 6 }}>
+      <VStack spacing={6} align="center" textAlign="center" mt={4}>
         <Image
           src={`http://192.168.1.194:8002/${collection.cover_url}`}
           alt={collection.title}
-          maxW={{ base: 'full', sm: '300px' }}
+          w={{ base: '100%', sm: '80%', md: '300px' }}
           objectFit="cover"
           borderRadius="lg"
           fallbackSrc="https://via.placeholder.com/300x400?text=No+Image"
         />
 
-        <Heading size="2xl">{collection.title}</Heading>
-        <Text fontSize="lg" color="gray.600">
+        <Heading size={{ base: 'lg', md: '2xl' }}>{collection.title}</Heading>
+        <Text fontSize={{ base: 'md', md: 'lg' }} color="gray.600">
           {collection.description}
         </Text>
       </VStack>
@@ -100,7 +99,7 @@ export default function CollectionDetail() {
           {collection.tracks.map((track) => {
             const filename = track.audio_url.split('/').pop()
             return (
-              <ListItem key={track.id} style={{ position: 'relative', zIndex: 0 }}>
+              <ListItem key={track.id}>
                 <Text fontWeight="bold" mb={1}>{track.title}</Text>
                 <audio
                   controls
@@ -109,9 +108,6 @@ export default function CollectionDetail() {
                     width: '100%',
                     minHeight: '40px',
                     padding: '6px',
-                    position: 'relative',
-                    zIndex: 1,
-                    pointerEvents: 'auto'
                   }}
                 >
                   <source src={`http://192.168.1.194:8002/api/audio/${filename}`} type="audio/mpeg" />
