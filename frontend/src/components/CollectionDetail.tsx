@@ -97,9 +97,23 @@ export default function CollectionDetail() {
         </Heading>
         <List spacing={6} pb={16}>
           {collection.tracks.map((track) => (
-            <ListItem key={track.id}>
+            <ListItem
+              key={track.id}
+              style={{ position: 'relative', zIndex: 0 }}
+            >
               <Text fontWeight="bold" mb={1}>{track.title}</Text>
-              <audio controls style={{ width: '100%' }}>
+              <audio
+                controls
+                preload="auto"
+                style={{
+                  width: '100%',
+                  minHeight: '40px',
+                  padding: '6px',
+                  position: 'relative',
+                  zIndex: 1,
+                  pointerEvents: 'auto'
+                }}
+              >
                 <source src={`http://192.168.1.194:8002/${track.audio_url}`} type="audio/mpeg" />
                 Votre navigateur ne supporte pas l'audio.
               </audio>

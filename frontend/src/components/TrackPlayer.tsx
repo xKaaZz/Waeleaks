@@ -12,7 +12,16 @@ interface TrackPlayerProps {
 
 export default function TrackPlayer({ track }: TrackPlayerProps) {
   return (
-    <Box borderWidth="1px" borderRadius="lg" p={4} bg="white" shadow="md" width="100%">
+    <Box
+      borderWidth="1px"
+      borderRadius="lg"
+      p={4}
+      bg="white"
+      shadow="md"
+      width="100%"
+      position="relative"
+      zIndex={0}
+    >
       <Text fontWeight="bold" mb={2}>
         {track.title}
       </Text>
@@ -20,9 +29,12 @@ export default function TrackPlayer({ track }: TrackPlayerProps) {
         controls
         preload="auto"
         style={{
-            width: '100%',
-            height: '40px', // ← augmente la hauteur
-            padding: '6px'  // ← laisse respirer le contrôle
+          width: '100%',
+          minHeight: '40px',
+          padding: '6px',
+          position: 'relative',
+          zIndex: 1,
+          pointerEvents: 'auto'
         }}
       >
         <source src={`http://192.168.1.194:8002/uploads/audio/${track.audio_url.split("/").pop()}`} type="audio/mpeg" />
