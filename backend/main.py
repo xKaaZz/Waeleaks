@@ -18,7 +18,8 @@ import schemas
 # --- INIT APP ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 models.Base.metadata.create_all(bind=engine)
-app = FastAPI()
+app = FastAPI(redirect_slashes=True)
+
 
 app.add_middleware(
     CORSMiddleware,

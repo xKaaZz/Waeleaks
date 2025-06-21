@@ -14,7 +14,7 @@ export default function TrackList() {
   const [tracks, setTracks] = useState<Track[]>([])
 
   useEffect(() => {
-    api.get('/tracks') // ⚠️ il faut que cette route existe côté backend
+    api.get('/tracks/') // ⚠️ il faut que cette route existe côté backend
       .then((res) => setTracks(res.data))
       .catch(() => setTracks([]))
   }, [])
