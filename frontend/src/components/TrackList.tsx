@@ -1,6 +1,7 @@
+// src/components/TrackList.tsx
 import { useEffect, useState } from 'react'
 import api from '../axiosConfig'
-import { Box, Text, VStack, Container } from '@chakra-ui/react'
+import { VStack, Box, Text } from '@chakra-ui/react'
 
 interface Track {
   id: number
@@ -13,45 +14,49 @@ export default function TrackList() {
 
   useEffect(() => {
     api.get('/tracks/')
-      .then((res) => setTracks(res.data))
+      .then(res => setTracks(res.data))
       .catch(() => setTracks([]))
   }, [])
 
   return (
-    <Container maxW="container.sm" px={{ base: 4, md: 6 }} py={4}>
-      <VStack spacing={4} align="stretch">
-        {tracks.length ? (
-          tracks.map((track) => {
-            const filename = track.audio_url.split('/').pop()
-            return (
-              <Box
-                key={track.id}
-                p={3}
-                bg="white"
-                boxShadow="base"
-                borderRadius="md"
+    <VStack spacing={2} align="stretch" w="100%">
+      {tracks.length ? (
+        tracks.map(track => {
+          const filename = track.audio_url.split('/').pop()
+          return (
+            <Box
+              key={track.id}
+              w="100%"                // occupe 100% de la zone px={4} de la page
+              bg="white"
+              boxShadow="sm"
+              borderRadius="md"
+              p={3}
+            >
+              <Text fontSize="md" fontWeight="semibold" mb={2} noOfLines={1}>
+                {track.title}
+              </Text>
+              <audio
+                controls
+                preload="none"
+                style={{
+                  width: '100%',       // prend toute la largeur du Box
+                  minHeight: '40px',
+                }}
               >
-                <Text fontWeight="semibold" fontSize="md" mb={1} noOfLines={1}>
-                  {track.title}
-                </Text>
-                <audio
-                  controls
-                  preload="none"
-                  style={{
-                    width: '100%',
-                    minHeight: '38px',
-                  }}
-                >
-                  <source src={`http://192.168.1.194:8002/api/audio/${filename}`} type="audio/mpeg" />
-                  Votre navigateur ne supporte pas l'audio.
-                </audio>
-              </Box>
-            )
-          })
-        ) : (
-          <Text>Aucun son disponible</Text>
-        )}
-      </VStack>
-    </Container>
+                <source
+                  src={`http://192.168.1.194:8002/api/audio/${filename}`}
+                  type="audio/mpeg"
+                />
+                Votre navigateur ne supporte pas l'audio.
+              </audio>
+            </Box>
+          )
+        })
+      ) : (
+        <Text textAlign="center" py={8}>
+          Aucun son disponible
+        </Text>
+      )}
+    </VStack>
   )
 }
