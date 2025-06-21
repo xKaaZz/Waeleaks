@@ -6,11 +6,6 @@ export default function Navbar() {
   const { username, isAdmin, logout } = useAuth()
   const navigate = useNavigate()
 
-  const handleLogout = () => {
-    logout()
-    navigate('/login')
-  }
-
   return (
     <Box bg="blue.600" px={8} py={4} w="100%">
       <Flex align="center" maxW="1200px" mx="auto" gap={6}>
@@ -43,7 +38,7 @@ export default function Navbar() {
                   Lier Telegram
                 </Button>
               </RouterLink>
-              <Button colorScheme="red" onClick={handleLogout}>
+              <Button colorScheme="red" onClick={() => { logout(); navigate('/login') }}>
                 Déconnexion
               </Button>
             </>

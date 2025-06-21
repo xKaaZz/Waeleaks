@@ -1,16 +1,16 @@
 import { ChakraProvider, Box } from '@chakra-ui/react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { AuthProvider } from './context/AuthContext'
 import Navbar from './components/Navbar'
-import CollectionList from './components/CollectionList'
-import Home from './components/Home'
-import CollectionDetail from './components/CollectionDetail'
+import AdminPanel from './components/AdminPanel'
 import AddCollectionForm from './components/AddCollectionForm'
-import AddTrackForm from './components/AddTrackForm'
+import AddTrackHorsCollection from './components/AddTrackHorsCollection'
+import AddTrackToCollection from './components/AddTrackToCollection'
+import CollectionList from './components/CollectionList'
+import CollectionDetail from './components/CollectionDetail'
 import LoginPage from './components/LoginPage'
 import RegisterPage from './components/RegisterPage'
 import UpdateTelegramPage from './components/UpdateTelegramPage'
-import { AuthProvider } from './context/AuthContext'
-import AdminPanel from './components/AdminPanel'
 
 function App() {
   return (
@@ -19,20 +19,21 @@ function App() {
         <Router>
           <Box minH="100vh" bg="gray.50">
             <Navbar />
-            <Box px={6} py={4} maxW="100%">
+            <Box px={6} py={4}>
               <Routes>
-                <Route path="/" element={<Home />} />
+                <Route path="/" element={<CollectionList />} />
                 <Route path="/collection/:id" element={<CollectionDetail />} />
-                <Route path="/collection/:id/add" element={<AddTrackForm />} />
-                <Route path="/add" element={<AddCollectionForm />} />
+
+                {/* admin */}
+                <Route path="/admin" element={<AdminPanel />} />
+                <Route path="/add-collection" element={<AddCollectionForm />} />
+                <Route path="/add-track" element={<AddTrackHorsCollection />} />
+                <Route path="/add-track-to-collection" element={<AddTrackToCollection />} />
+
+                {/* auth */}
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/update-telegram" element={<UpdateTelegramPage />} />
-                <Route path="/add-collection" element={<AddCollectionForm />} />
-                <Route path="/add-track" element={<AddTrackForm />} />
-                <Route path="/collection/:id/add" element={<AddTrackForm />} />
-                <Route path="/admin" element={<AdminPanel />} />
-
               </Routes>
             </Box>
           </Box>
@@ -41,6 +42,5 @@ function App() {
     </ChakraProvider>
   )
 }
-
 
 export default App
