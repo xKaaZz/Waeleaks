@@ -1,4 +1,3 @@
-// src/components/TrackList.tsx
 import { useEffect, useState } from 'react'
 import api from '../axiosConfig'
 import { VStack, Box, Text } from '@chakra-ui/react'
@@ -26,20 +25,25 @@ export default function TrackList() {
           return (
             <Box
               key={track.id}
-              w="100%"                // occupe 100% de la zone px={4} de la page
+              w="100%"              // prend 100% de la zone parent (px={4} de la page)
               bg="white"
               boxShadow="sm"
               borderRadius="md"
               p={3}
             >
-              <Text fontSize="md" fontWeight="semibold" mb={2} noOfLines={1}>
+              <Text
+                fontSize="md"
+                fontWeight="semibold"
+                mb={2}
+                noOfLines={1}
+              >
                 {track.title}
               </Text>
               <audio
                 controls
                 preload="none"
                 style={{
-                  width: '100%',       // prend toute la largeur du Box
+                  width: '100%',   // plein écran dans la Box
                   minHeight: '40px',
                 }}
               >
