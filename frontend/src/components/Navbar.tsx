@@ -1,12 +1,4 @@
-import {
-  Box,
-  Flex,
-  Button,
-  Heading,
-  Text,
-  HStack,
-  Spacer,
-} from '@chakra-ui/react'
+import { Box, Flex, Button, Heading, Text } from '@chakra-ui/react'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
@@ -20,61 +12,39 @@ export default function Navbar() {
   }
 
   return (
-    <Box bg="blue.600" px={8} py={4} boxShadow="sm">
-      <Flex
-        maxW="1440px"
-        mx="auto"
-        align="center"
-        justify="space-between"
-        wrap="wrap"
-      >
+    <Box bg="blue.600" px={8} py={4} width="100%">
+      <Flex maxW="100%" align="center" justify="space-between">
         <RouterLink to="/">
           <Heading size="lg" color="white">
             Waeleaks
           </Heading>
         </RouterLink>
 
-        <Spacer />
-
-        <HStack spacing={4}>
+        <Flex align="center" gap={4} flexWrap="wrap">
           {username ? (
             <>
               <Text color="white">Bonjour, {username}</Text>
-              <Button
-                size="sm"
-                colorScheme="whiteAlpha"
-                variant="outline"
-                onClick={() => navigate('/add-collection')}
-              >
-                Ajouter une collection
-              </Button>
-              <Button
-                size="sm"
-                colorScheme="whiteAlpha"
-                variant="outline"
-                onClick={() => navigate('/collection/1/add')} // TODO: rendre dynamique
-              >
-                Ajouter un son
-              </Button>
-              <Button colorScheme="red" size="sm" onClick={handleLogout}>
+              <RouterLink to="/add-collection">
+                <Button colorScheme="whiteAlpha" variant="outline">Ajouter une collection</Button>
+              </RouterLink>
+              <RouterLink to="/add-track">
+                <Button colorScheme="whiteAlpha" variant="outline">Ajouter un son</Button>
+              </RouterLink>
+              <Button colorScheme="red" onClick={handleLogout}>
                 Déconnexion
               </Button>
             </>
           ) : (
             <>
               <RouterLink to="/login">
-                <Button colorScheme="whiteAlpha" size="sm">
-                  Connexion
-                </Button>
+                <Button colorScheme="whiteAlpha">Connexion</Button>
               </RouterLink>
               <RouterLink to="/register">
-                <Button colorScheme="whiteAlpha" size="sm">
-                  Inscription
-                </Button>
+                <Button colorScheme="whiteAlpha">Inscription</Button>
               </RouterLink>
             </>
           )}
-        </HStack>
+        </Flex>
       </Flex>
     </Box>
   )

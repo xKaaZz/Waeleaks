@@ -17,7 +17,7 @@ function App() {
         <Router>
           <Box minH="100vh" bg="gray.50">
             <Navbar />
-            <Box p={4}>
+            <Box px={6} py={4} maxW="100%">
               <Routes>
                 <Route path="/" element={<CollectionList />} />
                 <Route path="/collection/:id" element={<CollectionDetail />} />

@@ -28,7 +28,7 @@ export default function UpdateTelegramPage() {
   }
 
   return (
-    <Box maxW="md" mx="auto" mt={10} p={6} borderWidth={1} borderRadius="lg" bg="white">
+    <Box px={6} py={8} width="100%" maxW="600px" mx="auto">
       <Heading mb={6} size="lg" textAlign="center">
         Paramètres Telegram
       </Heading>
