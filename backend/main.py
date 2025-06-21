@@ -173,3 +173,7 @@ def serve_audio(filename: str):
     if not os.path.isfile(path):
         raise HTTPException(status_code=404, detail="Fichier introuvable")
     return FileResponse(path, media_type="audio/mpeg")
+
+@app.get("/api/tracks/", response_model=List[schemas.Track])
+def list_tracks(db: Session = Depends(get_db)):
+    return db.query(models.Track).all()
