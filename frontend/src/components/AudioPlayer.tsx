@@ -32,9 +32,9 @@ export default function AudioPlayer({
   onProgress,
 }: AudioPlayerProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null)
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [duration, setDuration] = useState(0)       // en secondes
-  const [currentTime, setCurrentTime] = useState(0) // en secondes
+  const [isPlaying, setIsPlaying]   = useState(false)
+  const [duration, setDuration]     = useState(0)
+  const [currentTime, setCurrentTime] = useState(0)
 
   // Format mm:ss
   const formatTime = (sec: number) => {
@@ -43,52 +43,63 @@ export default function AudioPlayer({
     return `${m}:${s.toString().padStart(2, '0')}`
   }
 
-  // Métadatas chargées
-  const handleLoaded = () => {
+  // Quand metadata chargée
+  const onLoadedMetadata = () => {
     const a = audioRef.current!
     setDuration(a.duration)
     onProgress?.(0)
   }
 
-  // Mise à jour du temps
-  const handleTimeUpdate = () => {
+  // À chaque update de temps
+  const onTimeUpdate = () => {
     const a = audioRef.current!
     setCurrentTime(a.currentTime)
-    if (a.duration) {
-      onProgress?.(a.currentTime / a.duration)
-    }
+    if (a.duration > 0) onProgress?.(a.currentTime / a.duration)
   }
 
-  // Fin de la piste
-  const handleEnded = () => {
+  // À la fin : skip ou pause
+  const onEnded = () => {
     if (currentIndex < playlist.length - 1) {
       onSelectTrack(currentIndex + 1)
+      // on repartira en play auto car hasInteracted = true
     } else {
       setIsPlaying(false)
     }
   }
 
-  // Jouer / pause
-  useEffect(() => {
+  // Handlers play/pause via clic (événement utilisateur)
+  const togglePlay = () => {
     const a = audioRef.current!
-    if (isPlaying) {
-      a.play().catch(() => {/* autoplay bloqué */})
+    if (!isPlaying) {
+      a.play().catch(() => {
+        /* Safari iOS peut rejeter si pas inline, mais on a playsInline */
+      })
+      setIsPlaying(true)
     } else {
       a.pause()
+      setIsPlaying(false)
     }
-  }, [isPlaying, currentIndex])
-
-  // Dès qu'on interagit, on lance
-  useEffect(() => {
-    if (hasInteracted) setIsPlaying(true)
-  }, [hasInteracted, currentIndex])
+  }
 
   // Skip précédent / suivant
-  const prevTrack = () => currentIndex > 0 && onSelectTrack(currentIndex - 1)
-  const nextTrack = () => currentIndex < playlist.length - 1 && onSelectTrack(currentIndex + 1)
+  const prevTrack = () => {
+    if (currentIndex > 0) onSelectTrack(currentIndex - 1)
+  }
+  const nextTrack = () => {
+    if (currentIndex < playlist.length - 1) onSelectTrack(currentIndex + 1)
+  }
+
+  // Quand on change de piste, on relance si déjà interagi
+  useEffect(() => {
+    if (hasInteracted && audioRef.current) {
+      // play automatique sur piste suivante
+      audioRef.current.play().catch(() => {})
+      setIsPlaying(true)
+    }
+  }, [currentIndex, hasInteracted])
 
   // Seek via slider
-  const handleSeek = (val: number) => {
+  const onSeek = (val: number) => {
     const a = audioRef.current!
     a.currentTime = val
     setCurrentTime(val)
@@ -107,7 +118,7 @@ export default function AudioPlayer({
         <IconButton
           aria-label={isPlaying ? 'Pause' : 'Play'}
           icon={isPlaying ? <FiPause /> : <FiPlay />}
-          onClick={() => setIsPlaying(!isPlaying)}
+          onClick={togglePlay}
         />
         <IconButton
           aria-label="Suivant"
@@ -126,7 +137,7 @@ export default function AudioPlayer({
           max={duration}
           flex="1"
           step={0.1}
-          onChange={handleSeek}
+          onChange={onSeek}
         >
           <SliderTrack bg="gray.200">
             <SliderFilledTrack bg="teal.500" />
@@ -139,9 +150,12 @@ export default function AudioPlayer({
       <audio
         ref={audioRef}
         src={playlist[currentIndex].url}
-        onLoadedMetadata={handleLoaded}
-        onTimeUpdate={handleTimeUpdate}
-        onEnded={handleEnded}
+        playsInline
+        webkit-playsinline="true"
+        preload="metadata"
+        onLoadedMetadata={onLoadedMetadata}
+        onTimeUpdate={onTimeUpdate}
+        onEnded={onEnded}
         style={{ display: 'none' }}
       />
     </Box>
