@@ -67,10 +67,12 @@ export default function CollectionDetail() {
     return <Center h="50vh"><Text color="red.500">{error || 'Collection non trouvée'}</Text></Center>
   }
 
-  const playlist = (collection.tracks || []).map(track => ({
-    title: track.title,
-    url: `http://192.168.1.194:8002/api/audio/${track.audio_url.split('/').pop()}`,
-  }))
+  const playlist = (collection.tracks || [])
+    .filter(track => track.audio_url) // on vire les tracks corrompus
+    .map(track => ({
+      title: track.title,
+      url: `http://192.168.1.194:8002/api/audio/${track.audio_url.split('/').pop()}`,
+    }))
 
   return (
     <Box bg="gray.50" w="100%" minH="100vh" py={6} px={{ base: 4, md: 8 }}>
