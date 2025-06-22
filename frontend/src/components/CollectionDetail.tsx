@@ -13,6 +13,7 @@ import {
 } from '@chakra-ui/react'
 import api from '../axiosConfig'
 import TrackPlayer from './TrackPlayer'
+import AudioPlayer from './AudioPlayer'
 
 interface Track {
   id: number
@@ -103,6 +104,21 @@ export default function CollectionDetail() {
             Ajouter un son
           </Button>
         </Box>
+
+        {collection.tracks.length > 0 && (
+          <>
+            <Divider my={8} />
+            <Heading size="md" mb={4} textAlign="center">
+              🎧 Lecture automatique
+            </Heading>
+            <AudioPlayer
+              playlist={collection.tracks.map(track => ({
+                title: track.title,
+                url: `http://192.168.1.194:8002/${track.audio_url}`,
+              }))}
+            />
+          </>
+        )}
       </Box>
     </Box>
   )
