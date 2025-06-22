@@ -43,7 +43,7 @@ export default function CollectionDetail() {
   const [error, setError] = useState<string | null>(null)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [hasInteracted, setHasInteracted] = useState(false)
-  const [progress, setProgress] = useState(0)
+  const [progress, setProgress] = useState(0) // 0→1
 
   useEffect(() => {
     api
@@ -66,13 +66,13 @@ export default function CollectionDetail() {
       </Center>
     )
 
+  // Build playlist
   const playlist = collection.tracks.map(track => ({
     title: track.title,
-    url: `http://192.168.1.194:8002/api/audio/${track.audio_url
-      .split('/')
-      .pop()}`,
+    url: `http://192.168.1.194:8002/api/audio/${track.audio_url.split('/').pop()}`,
   }))
 
+  // Theming
   const headerBg = useColorModeValue('gray.100', 'gray.700')
   const trackHover = useColorModeValue('gray.200', 'gray.600')
   const currentBg = useColorModeValue('teal.50', 'teal.900')
@@ -80,7 +80,7 @@ export default function CollectionDetail() {
 
   return (
     <Box bg="gray.50" w="100%" minH="100vh" py={6} px={{ base: 4, md: 8 }}>
-      {/* Album Header */}
+      {/* Album header */}
       <Flex
         direction={{ base: 'column', md: 'row' }}
         align="center"
@@ -125,7 +125,7 @@ export default function CollectionDetail() {
         </VStack>
       </Flex>
 
-      {/* Audio Player */}
+      {/* Global audio player */}
       <Box mb={8}>
         <AudioPlayer
           playlist={playlist}
@@ -139,7 +139,7 @@ export default function CollectionDetail() {
         />
       </Box>
 
-      {/* Track List */}
+      {/* Track list with conic-gradient border */}
       <Heading size="lg" mb={4}>
         Liste des morceaux
       </Heading>
@@ -152,16 +152,23 @@ export default function CollectionDetail() {
               key={idx}
               position="relative"
               bg={isCurrent ? currentBg : headerBg}
-              borderLeftWidth={isCurrent ? '4px' : 0}
-              borderLeftColor={isCurrent ? accent : 'transparent'}
-              borderRadius="md"
-              _hover={{ bg: isCurrent ? currentBg : trackHover }}
-              p={3}
               cursor="pointer"
+              p={3}
+              _hover={{ bg: isCurrent ? currentBg : trackHover }}
               onClick={() => {
                 setCurrentIndex(idx)
                 setHasInteracted(true)
               }}
+              borderWidth="4px"
+              borderColor="transparent"
+              borderStyle="solid"
+              borderRadius="md"
+              borderImageSlice={1}
+              borderImageSource={
+                isCurrent
+                  ? `conic-gradient(${accent} ${progress * 360}deg, transparent 0deg)`
+                  : undefined
+              }
             >
               <Flex justify="space-between" align="center">
                 <HStack spacing={4}>
@@ -183,19 +190,6 @@ export default function CollectionDetail() {
                   variant="ghost"
                 />
               </Flex>
-
-              {/* Barre de progression */}
-              {isCurrent && (
-                <Box
-                  position="absolute"
-                  bottom="0"
-                  left="0"
-                  height="3px"
-                  width={`${progress * 100}%`}
-                  bg={accent}
-                  borderBottomLeftRadius="md"
-                />
-              )}
             </ListItem>
           )
         })}
