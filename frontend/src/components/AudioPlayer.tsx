@@ -148,6 +148,8 @@ export default function AudioPlayer({
       </HStack>
 
       <audio
+        crossOrigin="anonymous"
+        controls
         ref={audioRef}
         src={playlist[currentIndex].url}
         playsInline
