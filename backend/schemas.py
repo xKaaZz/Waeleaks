@@ -45,3 +45,6 @@ class UserLogin(BaseModel):
 
 class Token(BaseModel):
     token: str
+
+class TrackUpdate(BaseModel):
+    collection_id: Optional[int]

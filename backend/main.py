@@ -216,6 +216,29 @@ def serve_audio(filename: str, request: Request):
 def list_tracks(db: Session = Depends(get_db)):
     return db.query(models.Track).all()
 
+
+@app.put("/api/tracks/{track_id}", response_model=schemas.Track)
+def update_track(
+    track_id: int,
+    payload: schemas.TrackUpdate,
+    db: Session = Depends(get_db)
+):
+    tr = db.query(models.Track).filter(models.Track.id == track_id).first()
+    if not tr:
+        raise HTTPException(status_code=404, detail="Track not found")
+
+    # si on passe une collection, on vérifie qu'elle existe
+    if payload.collection_id is not None:
+        from models import Collection
+        coll = db.query(models.Collection).filter(models.Collection.id == payload.collection_id).first()
+        if not coll:
+            raise HTTPException(status_code=404, detail="Collection not found")
+
+    tr.collection_id = payload.collection_id
+    db.commit()
+    db.refresh(tr)
+    return tr
+
 @app.delete("/api/collections/{collection_id}", status_code=204)
 def delete_collection(collection_id: int, db: Session = Depends(get_db)):
     col = db.query(models.TrackCollection).get(collection_id)
@@ -243,19 +266,3 @@ def update_telegram(
     user.telegram_token = telegram_token
     db.commit()
     return {"message": "Infos Telegram mises à jour"}
-
-@app.put("/api/tracks/{track_id}", response_model=schemas.Track)
-def update_track(
-    track_id: int,
-    payload: schemas.TrackCreate = Depends(),  # ou un schema dédié
-    db: Session = Depends(get_db)
-):
-    tr = db.query(models.Track).get(track_id)
-    if not tr:
-        raise HTTPException(404, "Son introuvable")
-    # on ne gère que la collection_id ici
-    # payload.collection_id doit exister dans le schema TrackCreate ou crear un schema UpdateTrack
-    tr.collection_id = payload.collection_id  
-    db.commit()
-    db.refresh(tr)
-    return tr
