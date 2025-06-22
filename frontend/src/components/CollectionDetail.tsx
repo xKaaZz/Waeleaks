@@ -5,7 +5,6 @@ import {
   Image,
   Heading,
   Text,
-  Divider,
   VStack,
   Spinner,
   Center,
@@ -36,7 +35,7 @@ interface Collection {
 }
 
 export default function CollectionDetail() {
-  // Hooks always at top
+  // ─── Hooks en haut ─────────────────────────────────────────────────────────
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
 
@@ -45,17 +44,16 @@ export default function CollectionDetail() {
   const [error, setError] = useState<string | null>(null)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [hasInteracted, setHasInteracted] = useState(false)
-  const [progress, setProgress] = useState(0) // from 0 to 1
+  const [progress, setProgress] = useState(0) // 0 → 1
 
-  // theme values
+  // Thème & Couleurs
   const headerBg   = useColorModeValue('gray.100', 'gray.700')
   const trackHover = useColorModeValue('gray.200', 'gray.600')
-  const currentBg  = useColorModeValue('teal.50', 'teal.900')
+  const currentBg  = useColorModeValue('teal.50',  'teal.900')
   const accent     = useColorModeValue('teal.500', 'teal.300')
 
   useEffect(() => {
-    api
-      .get<Collection>(`/collections/${id}`)
+    api.get<Collection>(`/collections/${id}`)
       .then(res => setCollection(res.data))
       .catch(() => setError('Erreur de chargement'))
       .finally(() => setIsLoading(false))
@@ -67,7 +65,6 @@ export default function CollectionDetail() {
         <Spinner size="xl" />
       </Center>
     )
-
   if (error || !collection)
     return (
       <Center h="50vh">
@@ -75,15 +72,15 @@ export default function CollectionDetail() {
       </Center>
     )
 
-  // build playlist
-  const playlist = collection.tracks.map(track => ({
-    title: track.title,
-    url: `http://192.168.1.194:8002/api/audio/${track.audio_url.split('/').pop()}`,
+  // Build playlist
+  const playlist = collection.tracks.map(t => ({
+    title: t.title,
+    url: `http://192.168.1.194:8002/api/audio/${t.audio_url.split('/').pop()}`,
   }))
 
   return (
     <Box bg="gray.50" w="100%" minH="100vh" py={6} px={{ base: 4, md: 8 }}>
-      {/* Album header */}
+      {/* ─── Album Header ───────────────────────────────────────────────────── */}
       <Flex
         direction={{ base: 'column', md: 'row' }}
         align="center"
@@ -119,8 +116,8 @@ export default function CollectionDetail() {
               {hasInteracted ? 'Pause' : 'Play Album'}
             </Button>
             <Button
-              onClick={() => navigate(`/collection/${collection.id}/add`)}
               variant="outline"
+              onClick={() => navigate(`/collection/${collection.id}/add`)}
             >
               Ajouter un son
             </Button>
@@ -128,7 +125,7 @@ export default function CollectionDetail() {
         </VStack>
       </Flex>
 
-      {/* Global audio player */}
+      {/* ─── Lecteur global ────────────────────────────────────────────────── */}
       <Box mb={8}>
         <AudioPlayer
           playlist={playlist}
@@ -142,14 +139,15 @@ export default function CollectionDetail() {
         />
       </Box>
 
-      {/* Track list with top & bottom progress bars */}
+      {/* ─── Liste des morceaux ────────────────────────────────────────────── */}
       <Heading size="lg" mb={4}>
         Liste des morceaux
       </Heading>
       <List spacing={2}>
         {playlist.map((sound, idx) => {
-          const isCurrent = idx === currentIndex
+          const isCurrent  = idx === currentIndex
           const isComplete = isCurrent && progress >= 0.99
+
           return (
             <ListItem
               as="div"
@@ -158,10 +156,6 @@ export default function CollectionDetail() {
               bg={isCurrent ? currentBg : headerBg}
               borderLeftWidth={isCurrent ? '4px' : 0}
               borderLeftColor={isCurrent ? accent : 'transparent'}
-              borderTopWidth={isComplete ? '4px' : 0}
-              borderRightWidth={isComplete ? '4px' : 0}
-              borderBottomWidth={isComplete ? '4px' : 0}
-              borderColor={accent}
               borderRadius="md"
               _hover={{ bg: isCurrent ? currentBg : trackHover }}
               p={3}
@@ -171,8 +165,8 @@ export default function CollectionDetail() {
                 setHasInteracted(true)
               }}
             >
-              {/* top progress bar */}
-              {isCurrent && (
+              {/* barre haute */}
+              {isCurrent && !isComplete && (
                 <Box
                   position="absolute"
                   top="0"
@@ -207,8 +201,8 @@ export default function CollectionDetail() {
                 />
               </Flex>
 
-              {/* bottom progress bar */}
-              {isCurrent && (
+              {/* barre basse */}
+              {isCurrent && !isComplete && (
                 <Box
                   position="absolute"
                   bottom="0"
@@ -217,6 +211,20 @@ export default function CollectionDetail() {
                   width={`${progress * 100}%`}
                   bg={accent}
                   borderBottomLeftRadius="md"
+                />
+              )}
+
+              {/* barre droite à la fin */}
+              {isComplete && (
+                <Box
+                  position="absolute"
+                  top="0"
+                  right="0"
+                  width="3px"
+                  height="100%"
+                  bg={accent}
+                  borderTopRightRadius="md"
+                  borderBottomRightRadius="md"
                 />
               )}
             </ListItem>
