@@ -114,7 +114,7 @@ export default function AdminPanel() {
         </Button>
 
         <Select
-          placeholder="Choisir une collection à supprimer"
+          placeholder="Choisir une playlist à supprimer"
           value={selectedCollection}
           onChange={(e) => setSelectedCollection(e.target.value)}
         >
@@ -130,7 +130,7 @@ export default function AdminPanel() {
           onClick={handleDeleteCollection}
           isDisabled={!selectedCollection}
         >
-          Supprimer la collection
+          Supprimer la playlist
         </Button>
       </VStack>
     </Box>
