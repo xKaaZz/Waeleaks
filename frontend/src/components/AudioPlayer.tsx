@@ -16,9 +16,10 @@ export default function AudioPlayer({ playlist }: AudioPlayerProps) {
 
   const currentSound = playlist[currentIndex]
 
+  // On ne tente plus play() automatiquement (bloqué par le navigateur)
   useEffect(() => {
     if (audioRef.current) {
-      audioRef.current.play()
+      audioRef.current.load()
     }
   }, [currentIndex])
 
@@ -37,7 +38,6 @@ export default function AudioPlayer({ playlist }: AudioPlayerProps) {
         ref={audioRef}
         src={currentSound.url}
         controls
-        autoPlay
         onEnded={handleEnded}
       />
       <HStack mt={2}>
