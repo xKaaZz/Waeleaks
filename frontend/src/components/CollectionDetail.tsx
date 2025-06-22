@@ -35,16 +35,16 @@ interface Collection {
 }
 
 export default function CollectionDetail() {
-  // ─── Hooks (TOUJOURS en haut) ─────────────────────────────
+  // Hooks en haut
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
 
-  const [collection,    setCollection]    = useState<Collection | null>(null)
-  const [isLoading,     setIsLoading]     = useState(true)
-  const [error,         setError]         = useState<string | null>(null)
-  const [currentIndex,  setCurrentIndex]  = useState(0)
+  const [collection, setCollection] = useState<Collection | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [currentIndex, setCurrentIndex] = useState(0)
   const [hasInteracted, setHasInteracted] = useState(false)
-  const [progress,      setProgress]      = useState(0)  // 0 → 1
+  const [progress, setProgress] = useState(0) // de 0 à 1
 
   // Thème / Couleurs
   const headerBg   = useColorModeValue('gray.100', 'gray.700')
@@ -72,7 +72,7 @@ export default function CollectionDetail() {
       </Center>
     )
 
-  // Construction de la playlist
+  // Construire la playlist
   const playlist = collection.tracks.map(t => ({
     title: t.title,
     url: `http://192.168.1.194:8002/api/audio/${t.audio_url.split('/').pop()}`,
@@ -80,7 +80,7 @@ export default function CollectionDetail() {
 
   return (
     <Box bg="gray.50" w="100%" minH="100vh" py={6} px={{ base: 4, md: 8 }}>
-      {/* ─── Album Header ───────────────────────────────────────────── */}
+      {/* Album Header */}
       <Flex
         direction={{ base: 'column', md: 'row' }}
         align="center"
@@ -125,7 +125,7 @@ export default function CollectionDetail() {
         </VStack>
       </Flex>
 
-      {/* ─── Audio Player ─────────────────────────────────────────────── */}
+      {/* Audio Player */}
       <Box mb={8}>
         <AudioPlayer
           playlist={playlist}
@@ -139,7 +139,7 @@ export default function CollectionDetail() {
         />
       </Box>
 
-      {/* ─── Liste des morceaux ───────────────────────────────────────── */}
+      {/* Liste des morceaux */}
       <Heading size="lg" mb={4}>
         Liste des morceaux
       </Heading>
@@ -154,8 +154,16 @@ export default function CollectionDetail() {
               key={idx}
               position="relative"
               bg={isCurrent ? currentBg : headerBg}
+
+              /* Barre gauche fixe */
               borderLeftWidth={isCurrent ? '4px' : 0}
               borderLeftColor={isCurrent ? accent : 'transparent'}
+
+              /* Barre droite symétrique à la fin */
+              borderRightWidth={isComplete ? '4px' : 0}
+              borderRightColor={isComplete ? accent : 'transparent'}
+
+              borderStyle="solid"
               borderRadius="md"
               _hover={{ bg: isCurrent ? currentBg : trackHover }}
               p={3}
@@ -190,9 +198,11 @@ export default function CollectionDetail() {
                 <IconButton
                   aria-label={isCurrent ? 'Pause' : 'Play'}
                   icon={
-                    isCurrent
-                      ? <FiPause color={accent} />
-                      : <FiPlay  color={accent} />
+                    isCurrent ? (
+                      <FiPause color={accent} />
+                    ) : (
+                      <FiPlay  color={accent} />
+                    )
                   }
                   size="sm"
                   variant="ghost"
@@ -209,20 +219,6 @@ export default function CollectionDetail() {
                   width={`${progress * 100}%`}
                   bg={accent}
                   borderBottomLeftRadius="md"
-                />
-              )}
-
-              {/* Barre droite symétrique à la fin */}
-              {isComplete && (
-                <Box
-                  position="absolute"
-                  top="0"
-                  right="0"
-                  width="4px"
-                  height="100%"
-                  bg={accent}
-                  borderTopRightRadius="md"
-                  borderBottomRightRadius="md"
                 />
               )}
             </ListItem>
