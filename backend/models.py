@@ -4,7 +4,12 @@ from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from database import Base
 
-
+track_collection_association = Table(
+    "track_collection_association",
+    Base.metadata,
+    Column("track_id", ForeignKey("tracks.id"), primary_key=True),
+    Column("collection_id", ForeignKey("collections.id"), primary_key=True),
+)
 
 class User(Base):
     __tablename__ = "users"
@@ -25,7 +30,7 @@ class TrackCollection(Base):
     description = Column(String)
     cover_url = Column(String)
 
-    tracks = relationship("Track", back_populates="collection", cascade="all, delete-orphan")
+    tracks = relationship("Track", secondary=track_collection_association, back_populates="collections")
 
 
 class Track(Base):
@@ -34,7 +39,5 @@ class Track(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String)
     audio_url = Column(String)
-    collection_id = Column(Integer, ForeignKey("collections.id"), nullable=True)
 
-
-    collection = relationship("TrackCollection", back_populates="tracks")
+    collections = relationship("TrackCollection", secondary=track_collection_association, back_populates="tracks")

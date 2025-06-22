@@ -269,3 +269,14 @@ def update_telegram(
     user.telegram_token = telegram_token
     db.commit()
     return {"message": "Infos Telegram mises à jour"}
+
+@app.post("/api/collections/{collection_id}/add-track/{track_id}")
+def link_track_to_collection(collection_id: int, track_id: int, db: Session = Depends(get_db)):
+    collection = db.query(models.TrackCollection).get(collection_id)
+    track = db.query(models.Track).get(track_id)
+    if not collection or not track:
+        raise HTTPException(404, "Track ou collection introuvable")
+    if track not in collection.tracks:
+        collection.tracks.append(track)
+        db.commit()
+    return {"message": "Track ajouté à la collection"}

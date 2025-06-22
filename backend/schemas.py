@@ -1,6 +1,15 @@
 from typing import List, Optional
 from pydantic import BaseModel
 
+# ───── TRACK ───────────────────────────────────────────
+
+class CollectionNested(BaseModel):
+    id: int
+    title: str
+
+    class Config:
+        from_attributes = True  # anciennement orm_mode
+
 class TrackBase(BaseModel):
     title: str
     audio_url: str
@@ -9,14 +18,23 @@ class TrackCreate(TrackBase):
     pass
 
 class TrackUpdate(BaseModel):
-    collection_ids: List[int]  # on envoie la liste de toutes les collections
+    collection_ids: List[int]  # Permet d'assigner le son à plusieurs collections
 
 class Track(TrackBase):
     id: int
-    collection_ids: List[int] = []
+    collections: List[CollectionNested] = []
 
     class Config:
-        orm_mode = True
+        from_attributes = True
+
+# ───── COLLECTION ──────────────────────────────────────
+
+class TrackNested(BaseModel):
+    id: int
+    title: str
+
+    class Config:
+        from_attributes = True
 
 class CollectionBase(BaseModel):
     title: str
@@ -28,10 +46,12 @@ class CollectionCreate(CollectionBase):
 
 class Collection(CollectionBase):
     id: int
-    track_ids: List[int] = []
+    tracks: List[TrackNested] = []
 
     class Config:
-        orm_mode = True
+        from_attributes = True
+
+# ───── AUTH ─────────────────────────────────────────────
 
 class UserCreate(BaseModel):
     username: str
