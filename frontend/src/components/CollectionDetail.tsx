@@ -10,9 +10,14 @@ import {
   Spinner,
   Center,
   Button,
-  SimpleGrid,
+  HStack,
+  IconButton,
+  List,
+  ListItem,
+  Flex,
   useColorModeValue,
 } from '@chakra-ui/react'
+import { FiPlay, FiPause } from 'react-icons/fi'
 import api from '../axiosConfig'
 import AudioPlayer from './AudioPlayer'
 
@@ -40,93 +45,128 @@ export default function CollectionDetail() {
   const [hasInteracted, setHasInteracted] = useState(false)
 
   useEffect(() => {
-    api.get(`/collections/${id}`)
+    api.get<Collection>(`/collections/${id}`)
       .then(res => setCollection(res.data))
       .catch(() => setError('Erreur de chargement'))
       .finally(() => setIsLoading(false))
   }, [id])
 
   if (isLoading)
-    return <Center h="50vh"><Spinner size="xl"/></Center>
+    return <Center h="50vh"><Spinner size="xl" /></Center>
   if (error || !collection)
     return <Center h="50vh"><Text color="red.500">{error}</Text></Center>
 
+  // build playlist URLs
   const playlist = collection.tracks.map(track => ({
     title: track.title,
     url: `http://192.168.1.194:8002/api/audio/${track.audio_url.split('/').pop()}`,
   }))
-  const bg = useColorModeValue('gray.100', 'gray.700')
+
+  const headerBg = useColorModeValue('gray.100', 'gray.700')
+  const trackHover = useColorModeValue('gray.200', 'gray.600')
+  const currentBg = useColorModeValue('teal.50', 'teal.900')
+  const accent = useColorModeValue('teal.500', 'teal.300')
 
   return (
-    <Box bg="gray.50" w="100%" minH="100vh">
-      <Box px={{ base: 4, md: 8 }} py={4}>
-        <VStack spacing={6} align="center" textAlign="center">
-          <Image
-            src={`http://192.168.1.194:8002/${collection.cover_url}`}
-            alt={collection.title}
-            w={{ base: '100%', sm: '80%', md: '300px' }}
-            objectFit="cover"
-            borderRadius="lg"
-            fallbackSrc="/no-image.png"
-          />
-          <Heading size={{ base: 'lg', md: '2xl' }}>{collection.title}</Heading>
-          <Text fontSize={{ base: 'md', md: 'lg' }} color="gray.600">
+    <Box bg="gray.50" w="100%" minH="100vh" py={6} px={{ base: 4, md: 8 }}>
+      {/* Album Header */}
+      <Flex
+        direction={{ base: 'column', md: 'row' }}
+        align="center"
+        bg={headerBg}
+        p={6}
+        borderRadius="lg"
+        mb={8}
+      >
+        <Image
+          src={`http://192.168.1.194:8002/${collection.cover_url}`}
+          alt={collection.title}
+          boxSize={{ base: '200px', md: '250px' }}
+          objectFit="cover"
+          borderRadius="md"
+          mr={{ md: 6 }}
+          mb={{ base: 4, md: 0 }}
+        />
+        <VStack align="start" spacing={3} flex="1">
+          <Heading size="2xl">{collection.title}</Heading>
+          <Text fontSize="md" color="gray.600">
             {collection.description}
           </Text>
+          <HStack spacing={3} mt={4}>
+            <Button
+              leftIcon={hasInteracted ? <FiPause /> : <FiPlay />}
+              colorScheme="teal"
+              size="lg"
+              onClick={() => {
+                setHasInteracted(true)
+                // si play déjà en cours, pause, sinon lecture du premier
+                if (hasInteracted) {
+                  // toggle: onSelectTrack n’est pas géré ici, on laisse le player gérer
+                } else {
+                  setCurrentIndex(0)
+                }
+              }}
+            >
+              {hasInteracted ? 'Pause' : 'Play Album'}
+            </Button>
+            <Button onClick={() => navigate(`/collection/${collection.id}/add`)} variant="outline">
+              Ajouter un son
+            </Button>
+          </HStack>
         </VStack>
+      </Flex>
 
-        <Divider my={6} />
+      {/* Audio Player */}
+      <Box mb={8}>
+        <AudioPlayer
+          playlist={playlist}
+          currentIndex={currentIndex}
+          onSelectTrack={idx => {
+            setCurrentIndex(idx)
+            setHasInteracted(true)
+          }}
+          hasInteracted={hasInteracted}
+        />
+      </Box>
 
-        {playlist.length > 0 && (
-          <>
-            <Heading size="lg" mb={4}>🎧 Lecture automatique</Heading>
-            <AudioPlayer
-              playlist={playlist}
-              currentIndex={currentIndex}
-              onSelectTrack={index => {
-                setCurrentIndex(index)
+      {/* Track List */}
+      <Heading size="lg" mb={4}>Liste des morceaux</Heading>
+      <List spacing={2}>
+        {playlist.map((sound, idx) => {
+          const isCurrent = idx === currentIndex
+          return (
+            <ListItem
+              key={idx}
+              bg={isCurrent ? currentBg : headerBg}
+              _hover={{ bg: isCurrent ? currentBg : trackHover }}
+              borderRadius="md"
+              p={3}
+              cursor="pointer"
+              onClick={() => {
+                setCurrentIndex(idx)
                 setHasInteracted(true)
               }}
-              hasInteracted={hasInteracted}
-            />
-
-            <Divider my={8} />
-
-            <Heading size="lg" mb={4}>Sons</Heading>
-            <SimpleGrid columns={{ base: 1, sm: 2, md: 3 }} spacing={4}>
-              {playlist.map((sound, index) => (
-                <Box
-                  key={index}
-                  p={4}
-                  borderWidth="1px"
-                  borderRadius="lg"
-                  bg={bg}
-                  cursor="pointer"
-                  _hover={{ bg: 'blue.50' }}
-                  onClick={() => {
-                    setCurrentIndex(index)
-                    setHasInteracted(true)
-                  }}
-                >
-                  <Text fontWeight="bold">{sound.title}</Text>
-                  <Text fontSize="sm" color="gray.500">
-                    Cliquer pour jouer
+            >
+              <HStack justify="space-between">
+                <HStack spacing={4}>
+                  <Text fontWeight="bold" w="24px" textAlign="right">
+                    {idx + 1}.
                   </Text>
-                </Box>
-              ))}
-            </SimpleGrid>
-          </>
-        )}
-
-        <Box textAlign="center" mt={8}>
-          <Button
-            colorScheme="green"
-            onClick={() => navigate(`/collection/${collection.id}/add`)}
-          >
-            Ajouter un son
-          </Button>
-        </Box>
-      </Box>
+                  <Text fontWeight={isCurrent ? 'semibold' : 'normal'}>
+                    {sound.title}
+                  </Text>
+                </HStack>
+                <IconButton
+                  aria-label={isCurrent ? 'Pause' : 'Play'}
+                  icon={isCurrent ? <FiPause color={accent} /> : <FiPlay color={accent} />}
+                  size="sm"
+                  variant="ghost"
+                />
+              </HStack>
+            </ListItem>
+          )
+        })}
+      </List>
     </Box>
   )
 }
