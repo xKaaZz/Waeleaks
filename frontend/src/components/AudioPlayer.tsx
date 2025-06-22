@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
-import { 
-  Box, 
-  IconButton, 
-  HStack, 
-  Text, 
-  Slider, 
-  SliderTrack, 
-  SliderFilledTrack, 
-  SliderThumb 
+import {
+  Box,
+  IconButton,
+  HStack,
+  Text,
+  Slider,
+  SliderTrack,
+  SliderFilledTrack,
+  SliderThumb,
 } from '@chakra-ui/react'
 import { FiPlay, FiPause, FiSkipBack, FiSkipForward } from 'react-icons/fi'
 
@@ -21,7 +21,7 @@ interface AudioPlayerProps {
   currentIndex: number
   onSelectTrack: (idx: number) => void
   hasInteracted: boolean
-  onProgress?: (progress: number) => void  // <-- passe en optionnel
+  onProgress?: (progress: number) => void
 }
 
 export default function AudioPlayer({
@@ -29,32 +29,37 @@ export default function AudioPlayer({
   currentIndex,
   onSelectTrack,
   hasInteracted,
-  onProgress,          // peut être undefined
+  onProgress,
 }: AudioPlayerProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
-  const [duration, setDuration] = useState(0)
-  const [currentTime, setCurrentTime] = useState(0)
+  const [duration, setDuration] = useState(0)       // en secondes
+  const [currentTime, setCurrentTime] = useState(0) // en secondes
 
-  // Au chargement des métadonnées : on récupère la durée
-  const handleLoadedMetadata = () => {
-    if (!audioRef.current) return
-    setDuration(audioRef.current.duration)
-    // on informe l'avancement initial à 0
+  // Format mm:ss
+  const formatTime = (sec: number) => {
+    const m = Math.floor(sec / 60)
+    const s = Math.floor(sec % 60)
+    return `${m}:${s.toString().padStart(2, '0')}`
+  }
+
+  // Métadatas chargées
+  const handleLoaded = () => {
+    const a = audioRef.current!
+    setDuration(a.duration)
     onProgress?.(0)
   }
 
-  // À chaque « timeupdate », on met à jour l'état et on appelle onProgress si défini
+  // Mise à jour du temps
   const handleTimeUpdate = () => {
-    if (!audioRef.current) return
-    const ct = audioRef.current.currentTime
-    setCurrentTime(ct)
-    if (duration > 0) {
-      onProgress?.(ct / duration)
+    const a = audioRef.current!
+    setCurrentTime(a.currentTime)
+    if (a.duration) {
+      onProgress?.(a.currentTime / a.duration)
     }
   }
 
-  // Quand la piste se termine, on avance automatiquement
+  // Fin de la piste
   const handleEnded = () => {
     if (currentIndex < playlist.length - 1) {
       onSelectTrack(currentIndex + 1)
@@ -63,51 +68,35 @@ export default function AudioPlayer({
     }
   }
 
-  // Jouer / mettre en pause selon isPlaying
+  // Jouer / pause
   useEffect(() => {
-    const audio = audioRef.current
-    if (!audio) return
+    const a = audioRef.current!
     if (isPlaying) {
-      audio.play().catch(() => { /* Ignorer erreurs autoplay */ })
+      a.play().catch(() => {/* autoplay bloqué */})
     } else {
-      audio.pause()
+      a.pause()
     }
   }, [isPlaying, currentIndex])
 
-  // Si l'utilisateur interagit (sélection carte ou bouton album), on démarre
+  // Dès qu'on interagit, on lance
   useEffect(() => {
     if (hasInteracted) setIsPlaying(true)
   }, [hasInteracted, currentIndex])
 
-  // Handlers pour skip precedent / suivant
-  const prevTrack = () => {
-    if (currentIndex > 0) {
-      onSelectTrack(currentIndex - 1)
-    }
-  }
-  const nextTrack = () => {
-    if (currentIndex < playlist.length - 1) {
-      onSelectTrack(currentIndex + 1)
-    }
-  }
+  // Skip précédent / suivant
+  const prevTrack = () => currentIndex > 0 && onSelectTrack(currentIndex - 1)
+  const nextTrack = () => currentIndex < playlist.length - 1 && onSelectTrack(currentIndex + 1)
 
   // Seek via slider
   const handleSeek = (val: number) => {
-    if (audioRef.current) {
-      audioRef.current.currentTime = val
-      setCurrentTime(val)
-      onProgress?.(val / duration)
-    }
+    const a = audioRef.current!
+    a.currentTime = val
+    setCurrentTime(val)
+    onProgress?.(val / a.duration)
   }
 
   return (
-    <Box
-      borderWidth="1px"
-      p={4}
-      borderRadius="md"
-      bg="white"
-      w="100%"
-    >
+    <Box borderWidth="1px" p={4} borderRadius="md" bg="white" w="100%">
       <HStack spacing={4}>
         <IconButton
           aria-label="Précédent"
@@ -130,26 +119,27 @@ export default function AudioPlayer({
       </HStack>
 
       <HStack mt={4} spacing={3}>
-        <Text>{Math.floor(currentTime)}</Text>
+        <Text minW="40px">{formatTime(currentTime)}</Text>
         <Slider
           value={currentTime}
           min={0}
           max={duration}
           flex="1"
+          step={0.1}
           onChange={handleSeek}
         >
-          <SliderTrack>
-            <SliderFilledTrack />
+          <SliderTrack bg="gray.200">
+            <SliderFilledTrack bg="teal.500" />
           </SliderTrack>
-          <SliderThumb />
+          <SliderThumb boxSize={4} />
         </Slider>
-        <Text>{Math.floor(duration)}</Text>
+        <Text minW="40px">{formatTime(duration)}</Text>
       </HStack>
 
       <audio
         ref={audioRef}
         src={playlist[currentIndex].url}
-        onLoadedMetadata={handleLoadedMetadata}
+        onLoadedMetadata={handleLoaded}
         onTimeUpdate={handleTimeUpdate}
         onEnded={handleEnded}
         style={{ display: 'none' }}
