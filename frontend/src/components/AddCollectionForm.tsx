@@ -77,7 +77,7 @@ export default function AddCollectionForm() {
           </FormControl>
 
           <Button type="submit" colorScheme="blue" isLoading={isLoading} width="full">
-            Créer la collection
+            Créer la playlist
           </Button>
         </VStack>
       </form>

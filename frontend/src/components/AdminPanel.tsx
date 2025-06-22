@@ -83,7 +83,7 @@ export default function AdminPanel() {
           width="100%"
           onClick={() => navigate("/add-collection")}
         >
-          Ajouter une collection
+          Ajouter une playlist
         </Button>
         <Button
           colorScheme="blue"

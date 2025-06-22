@@ -149,7 +149,7 @@ export default function AddTrackForm() {
           )}
 
           <Button type="submit" colorScheme="green" width="full">
-            {collectionId ? 'Ajouter à la collection' : 'Uploader le son'}
+            {collectionId ? 'Ajouter à la playlist' : 'Uploader le son'}
           </Button>
         </VStack>
       </form>

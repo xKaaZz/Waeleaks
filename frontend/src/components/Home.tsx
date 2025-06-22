@@ -18,7 +18,7 @@ export default function Home() {
         >
           <Heading size="lg" flex={1}>
             Bibliothèque –{' '}
-            {viewMode === 'collections' ? 'Collections' : 'Tous les sons'}
+            {viewMode === 'collections' ? 'Playlists' : 'Tous les sons'}
           </Heading>
           <Spacer />
           <Button
@@ -31,7 +31,7 @@ export default function Home() {
           >
             {viewMode === 'collections'
               ? 'Afficher tous les sons'
-              : 'Afficher les collections'}
+              : 'Afficher les playlists'}
           </Button>
         </Stack>
 
