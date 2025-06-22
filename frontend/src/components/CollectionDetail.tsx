@@ -149,6 +149,7 @@ export default function CollectionDetail() {
       <List spacing={2}>
         {playlist.map((sound, idx) => {
           const isCurrent = idx === currentIndex
+          const isComplete = isCurrent && progress >= 0.99
           return (
             <ListItem
               as="div"
@@ -157,6 +158,10 @@ export default function CollectionDetail() {
               bg={isCurrent ? currentBg : headerBg}
               borderLeftWidth={isCurrent ? '4px' : 0}
               borderLeftColor={isCurrent ? accent : 'transparent'}
+              borderTopWidth={isComplete ? '4px' : 0}
+              borderRightWidth={isComplete ? '4px' : 0}
+              borderBottomWidth={isComplete ? '4px' : 0}
+              borderColor={accent}
               borderRadius="md"
               _hover={{ bg: isCurrent ? currentBg : trackHover }}
               p={3}
