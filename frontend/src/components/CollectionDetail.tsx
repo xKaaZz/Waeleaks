@@ -114,7 +114,7 @@ export default function CollectionDetail() {
             <AudioPlayer
               playlist={collection.tracks.map(track => ({
                 title: track.title,
-                url: `http://192.168.1.194:8002/${track.audio_url}`,
+                url: `http://192.168.1.194:8002/api/audio/${track.audio_url.replace('uploads/audio/', '')}`,
               }))}
             />
           </>
