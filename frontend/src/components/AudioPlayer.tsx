@@ -21,31 +21,20 @@ export default function AudioPlayer({
   const currentSound = playlist[currentIndex]
 
   useEffect(() => {
-    if (!audioRef.current) return
+    const audio = audioRef.current
+    if (!audio) return
 
-    audioRef.current.load()
+    audio.load()
 
-    // Force la lecture à chaque changement de son
+    // lecture automatique après changement de source
     setTimeout(() => {
-      audioRef.current?.play().catch((err) => {
-        console.warn('Lecture bloquée :', err)
-      })
-    }, 100)
+      audio
+        .play()
+        .catch((err) => console.warn('Lecture refusée ou bloquée :', err))
+    }, 50)
   }, [currentIndex])
 
   const handleEnded = () => {
-    if (currentIndex < playlist.length - 1) {
-      onSelectTrack(currentIndex + 1)
-    }
-  }
-
-  const handlePrevious = () => {
-    if (currentIndex > 0) {
-      onSelectTrack(currentIndex - 1)
-    }
-  }
-
-  const handleNext = () => {
     if (currentIndex < playlist.length - 1) {
       onSelectTrack(currentIndex + 1)
     }
@@ -63,10 +52,22 @@ export default function AudioPlayer({
         onEnded={handleEnded}
       />
       <HStack mt={2}>
-        <Button onClick={handlePrevious} isDisabled={currentIndex === 0}>
+        <Button
+          onClick={() => {
+            if (currentIndex > 0) onSelectTrack(currentIndex - 1)
+          }}
+          isDisabled={currentIndex === 0}
+        >
           Précédent
         </Button>
-        <Button onClick={handleNext} isDisabled={currentIndex === playlist.length - 1}>
+        <Button
+          onClick={() => {
+            if (currentIndex < playlist.length - 1) {
+              onSelectTrack(currentIndex + 1)
+            }
+          }}
+          isDisabled={currentIndex === playlist.length - 1}
+        >
           Suivant
         </Button>
       </HStack>
