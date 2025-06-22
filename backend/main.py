@@ -243,3 +243,19 @@ def update_telegram(
     user.telegram_token = telegram_token
     db.commit()
     return {"message": "Infos Telegram mises à jour"}
+
+@app.put("/api/tracks/{track_id}", response_model=schemas.Track)
+def update_track(
+    track_id: int,
+    payload: schemas.TrackCreate = Depends(),  # ou un schema dédié
+    db: Session = Depends(get_db)
+):
+    tr = db.query(models.Track).get(track_id)
+    if not tr:
+        raise HTTPException(404, "Son introuvable")
+    # on ne gère que la collection_id ici
+    # payload.collection_id doit exister dans le schema TrackCreate ou crear un schema UpdateTrack
+    tr.collection_id = payload.collection_id  
+    db.commit()
+    db.refresh(tr)
+    return tr
