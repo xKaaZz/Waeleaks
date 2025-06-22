@@ -212,17 +212,9 @@ def serve_audio(filename: str, request: Request):
         }
     )
 
-@app.get("/api/tracks", response_model=List[schemas.Track])
-def list_tracks(
-    collection_id: Optional[int] = Query(
-        None, description="Filtre facultatif par id de collection"
-    ),
-    db: Session = Depends(get_db),
-):
-    q = db.query(models.Track)
-    if collection_id is not None:
-        q = q.filter(models.Track.collection_id == collection_id)
-    return q.all()
+@app.get("/api/tracks/", response_model=List[schemas.Track])
+def list_tracks(db: Session = Depends(get_db)):
+    return db.query(models.Track).all()
 
 
 @app.put("/api/tracks/{track_id}", response_model=schemas.Track)
