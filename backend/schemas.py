@@ -1,5 +1,3 @@
-# schemas.py
-
 from typing import List, Optional
 from pydantic import BaseModel
 
@@ -10,13 +8,15 @@ class TrackBase(BaseModel):
 class TrackCreate(TrackBase):
     pass
 
+class TrackUpdate(BaseModel):
+    collection_ids: List[int]  # on envoie la liste de toutes les collections
+
 class Track(TrackBase):
     id: int
-    collection_id: Optional[int] = None
+    collection_ids: List[int] = []
 
     class Config:
-        from_attributes = True
-
+        orm_mode = True
 
 class CollectionBase(BaseModel):
     title: str
@@ -28,16 +28,16 @@ class CollectionCreate(CollectionBase):
 
 class Collection(CollectionBase):
     id: int
-    tracks: List[Track] = []
+    track_ids: List[int] = []
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 class UserCreate(BaseModel):
     username: str
     password: str
-    telegram_id: str | None = None
-    telegram_token: str | None = None
+    telegram_id: Optional[str] = None
+    telegram_token: Optional[str] = None
 
 class UserLogin(BaseModel):
     username: str
@@ -45,6 +45,3 @@ class UserLogin(BaseModel):
 
 class Token(BaseModel):
     token: str
-
-class TrackUpdate(BaseModel):
-    collection_id: Optional[int]
