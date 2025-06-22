@@ -216,6 +216,9 @@ def serve_audio(filename: str, request: Request):
 def list_tracks(db: Session = Depends(get_db)):
     return db.query(models.Track).all()
 
+@app.get("/api/collections/{collection_id}/tracks", response_model=List[schemas.Track])
+def read_collection_tracks(collection_id: int, db: Session = Depends(get_db)):
+    return db.query(models.Track).filter(models.Track.collection_id == collection_id).all()
 
 @app.put("/api/tracks/{track_id}", response_model=schemas.Track)
 def update_track(
