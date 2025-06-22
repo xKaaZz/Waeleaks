@@ -188,4 +188,18 @@ export default function CollectionDetail() {
               {isCurrent && (
                 <Box
                   position="absolute"
-                  bottom
+                  bottom="0"
+                  left="0"
+                  height="3px"
+                  width={`${progress * 100}%`}
+                  bg={accent}
+                  borderBottomLeftRadius="md"
+                />
+              )}
+            </ListItem>
+          )
+        })}
+      </List>
+    </Box>
+  )
+}
