@@ -11,19 +11,30 @@ from database import get_db, engine
 import models, schemas
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# Création des tables
 models.Base.metadata.create_all(bind=engine)
+
 app = FastAPI(redirect_slashes=True)
 
+# 1) CORS MIDDLEWARE — à déclarer avant tout endpoint ou app.mount
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://192.168.1.194:5175", "http://localhost:5175"],
+    allow_origins=[  # ou ["*"] si tu veux ouvrir à tous les front
+        "http://192.168.1.194:5175",
+        "http://localhost:5175",
+    ],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-    expose_headers=["Content-Range", "Accept-Ranges", "Content-Length"],
+    allow_methods=["*"],       # GET, POST, PUT, DELETE, OPTIONS…
+    allow_headers=["*"],       # tous les headers autorisés
+    expose_headers=[           # si besoin d’exposer des headers spéciaux
+        "Content-Range",
+        "Accept-Ranges",
+        "Content-Length"
+    ],
 )
 
-# On ne monte QUE les covers en static
+# Static pour les covers
 app.mount(
     "/uploads/covers",
     StaticFiles(directory=os.path.join(BASE_DIR, "uploads", "covers")),
@@ -41,8 +52,8 @@ def create_token(user_id: int):
 
 def decode_token(token: str):
     try:
-        decoded = pyjwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-        return decoded.get("sub")
+        data = pyjwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        return data.get("sub")
     except:
         return None
 
@@ -55,6 +66,8 @@ def get_current_user(authorization: str = Header(None), db: Session = Depends(ge
         raise HTTPException(401, "Token invalide")
     return db.query(models.User).get(int(user_id))
 
+
+# — AUTHENT et UTILISATEUR
 @app.post("/api/register")
 def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
     if db.query(models.User).filter_by(username=user.username).first():
@@ -85,19 +98,23 @@ def get_user_me(user: models.User = Depends(get_current_user)):
         "is_admin": user.is_admin,
     }
 
+
+# — COLLECTIONS
 @app.get("/api/collections/", response_model=List[schemas.Collection])
 def list_collections(db: Session = Depends(get_db)):
     return db.query(models.TrackCollection).all()
 
 @app.get("/api/collections/{collection_id}", response_model=schemas.Collection)
 def get_collection(collection_id: int, db: Session = Depends(get_db)):
-    collection = db.query(models.TrackCollection)\
-        .options(joinedload(models.TrackCollection.tracks))\
-        .filter(models.TrackCollection.id == collection_id)\
+    col = (
+      db.query(models.TrackCollection)
+        .options(joinedload(models.TrackCollection.tracks))
+        .filter(models.TrackCollection.id == collection_id)
         .first()
-    if not collection:
-        raise HTTPException(status_code=404, detail="Collection non trouvée")
-    return collection
+    )
+    if not col:
+        raise HTTPException(404, "Collection non trouvée")
+    return col
 
 @app.post("/api/collections/", response_model=schemas.Collection)
 def create_collection(
@@ -116,6 +133,7 @@ def create_collection(
     db.add(new); db.commit(); db.refresh(new)
     return new
 
+# Ajout direct de piste à une collection (upload)
 @app.post("/api/collections/{collection_id}/tracks", response_model=schemas.Track)
 def add_track_to_collection(
     collection_id: int,
@@ -128,27 +146,17 @@ def add_track_to_collection(
     with open(os.path.join(BASE_DIR, ap), "wb") as buf:
         shutil.copyfileobj(audio.file, buf)
 
-    tr = models.Track(title=title, audio_url=ap, collection_id=collection_id)
-    db.add(tr); db.commit(); db.refresh(tr)
-
-    # 🔔 Notif Telegram
+    tr = models.Track(title=title, audio_url=ap)
+    # on lie la piste à la collection via la relation M2M
     col = db.query(models.TrackCollection).get(collection_id)
-    users = db.query(models.User).filter(
-        models.User.telegram_id != None,
-        models.User.telegram_token != None
-    ).all()
-    for user in users:
-        try:
-            msg = f"🎵 Nouveau son dans « {col.title} » : {title}"
-            requests.post(
-                f"https://api.telegram.org/bot{user.telegram_token}/sendMessage",
-                data={"chat_id": user.telegram_id, "text": msg}
-            )
-        except:
-            pass
+    if not col:
+        raise HTTPException(404, "Collection introuvable")
+    tr.collections.append(col)
 
+    db.add(tr); db.commit(); db.refresh(tr)
     return tr
 
+# Ajout d’un son « libre »
 @app.post("/api/tracks", response_model=schemas.Track)
 def add_standalone_track(
     title: str = Form(...),
@@ -160,26 +168,59 @@ def add_standalone_track(
     with open(os.path.join(BASE_DIR, ap), "wb") as buf:
         shutil.copyfileobj(audio.file, buf)
 
-    tr = models.Track(title=title, audio_url=ap, collection_id=None)
+    tr = models.Track(title=title, audio_url=ap)
     db.add(tr); db.commit(); db.refresh(tr)
-
-    # 🔔 Notif Telegram (son seul)
-    users = db.query(models.User).filter(
-        models.User.telegram_id != None,
-        models.User.telegram_token != None
-    ).all()
-    for user in users:
-        try:
-            msg = f"🎶 Nouveau son ajouté : {title}"
-            requests.post(
-                f"https://api.telegram.org/bot{user.telegram_token}/sendMessage",
-                data={"chat_id": user.telegram_id, "text": msg}
-            )
-        except:
-            pass
-
     return tr
 
+# Lecture des pistes M2M d’une collection (optionnel, front peut utiliser GET /collections/{id})
+@app.get("/api/collections/{collection_id}/tracks", response_model=List[schemas.Track])
+def read_collection_tracks(collection_id: int, db: Session = Depends(get_db)):
+    col = db.query(models.TrackCollection).get(collection_id)
+    if not col:
+        raise HTTPException(404, "Collection introuvable")
+    return col.tracks
+
+
+# — PISTES
+@app.get("/api/tracks/", response_model=List[schemas.Track])
+def list_tracks(db: Session = Depends(get_db)):
+    return db.query(models.Track).all()
+
+@app.put("/api/tracks/{track_id}", response_model=schemas.Track)
+def update_track(
+    track_id: int,
+    payload: schemas.TrackUpdate,
+    db: Session = Depends(get_db)
+):
+    tr = db.query(models.Track).get(track_id)
+    if not tr:
+        raise HTTPException(404, "Track non trouvée")
+    # Réassignation des collections
+    tr.collections = db.query(models.TrackCollection)\
+                       .filter(models.TrackCollection.id.in_(payload.collection_ids))\
+                       .all()
+    db.commit(); db.refresh(tr)
+    return tr
+
+# — SUPPRESSION
+@app.delete("/api/collections/{collection_id}", status_code=204)
+def delete_collection(collection_id: int, db: Session = Depends(get_db)):
+    col = db.query(models.TrackCollection).get(collection_id)
+    if not col:
+        raise HTTPException(404, "Collection introuvable")
+    db.delete(col)
+    db.commit()
+
+@app.delete("/api/tracks/{track_id}", status_code=204)
+def delete_track(track_id: int, db: Session = Depends(get_db)):
+    tr = db.query(models.Track).get(track_id)
+    if not tr:
+        raise HTTPException(404, "Track introuvable")
+    db.delete(tr)
+    db.commit()
+
+
+# — AUDIO STREAMING
 @app.get("/api/audio/{filename}")
 def serve_audio(filename: str, request: Request):
     path = os.path.join(BASE_DIR, "uploads", "audio", filename)
@@ -192,10 +233,11 @@ def serve_audio(filename: str, request: Request):
             f.seek(start)
             while chunk := f.read(4096):
                 yield chunk
+
     if range_header:
         start, end = range_header.replace("bytes=", "").split("-")
         start = int(start)
-        end = int(end) if end else file_size - 1
+        end   = int(end) if end else file_size - 1
         length = end - start + 1
         return StreamingResponse(
             iterfile(start),
@@ -207,6 +249,7 @@ def serve_audio(filename: str, request: Request):
                 "Content-Type": "audio/mpeg",
             }
         )
+
     return StreamingResponse(
         iterfile(),
         headers={
@@ -216,52 +259,7 @@ def serve_audio(filename: str, request: Request):
         }
     )
 
-@app.get("/api/tracks/", response_model=List[schemas.Track])
-def list_tracks(db: Session = Depends(get_db)):
-    return db.query(models.Track).all()
-
-@app.get("/api/collections/{collection_id}/tracks", response_model=List[schemas.Track])
-def read_collection_tracks(collection_id: int, db: Session = Depends(get_db)):
-    return db.query(models.Track).filter(models.Track.collection_id == collection_id).all()
-
-@app.put("/api/tracks/{track_id}", response_model=schemas.Track)
-def update_track(
-    track_id: int,
-    payload: schemas.TrackUpdate,
-    db: Session = Depends(get_db)
-):
-    tr = db.query(models.Track).filter(models.Track.id == track_id).first()
-    if not tr:
-        raise HTTPException(status_code=404, detail="Track not found")
-
-    # si on passe une collection, on vérifie qu'elle existe
-    if payload.collection_id is not None:
-        from models import Collection
-        coll = db.query(models.Collection).filter(models.Collection.id == payload.collection_id).first()
-        if not coll:
-            raise HTTPException(status_code=404, detail="Collection not found")
-
-    tr.collection_id = payload.collection_id
-    db.commit()
-    db.refresh(tr)
-    return tr
-
-@app.delete("/api/collections/{collection_id}", status_code=204)
-def delete_collection(collection_id: int, db: Session = Depends(get_db)):
-    col = db.query(models.TrackCollection).get(collection_id)
-    if not col:
-        raise HTTPException(404, "Collection introuvable")
-    if db.query(models.Track).filter_by(collection_id=collection_id).count():
-        raise HTTPException(400, "Impossible de supprimer une collection non vide")
-    db.delete(col); db.commit()
-
-@app.delete("/api/tracks/{track_id}", status_code=204)
-def delete_track(track_id: int, db: Session = Depends(get_db)):
-    tr = db.query(models.Track).get(track_id)
-    if not tr:
-        raise HTTPException(404, "Son introuvable")
-    db.delete(tr); db.commit()
-
+# — TELEGRAM SETTINGS
 @app.put("/api/user/telegram")
 def update_telegram(
     telegram_id: str = Form(...),
@@ -274,13 +272,14 @@ def update_telegram(
     db.commit()
     return {"message": "Infos Telegram mises à jour"}
 
+# — AJOUTER / LIER une piste existante à une collection
 @app.post("/api/collections/{collection_id}/add-track/{track_id}")
 def link_track_to_collection(collection_id: int, track_id: int, db: Session = Depends(get_db)):
-    collection = db.query(models.TrackCollection).get(collection_id)
-    track = db.query(models.Track).get(track_id)
-    if not collection or not track:
+    col = db.query(models.TrackCollection).get(collection_id)
+    tr  = db.query(models.Track).get(track_id)
+    if not col or not tr:
         raise HTTPException(404, "Track ou collection introuvable")
-    if track not in collection.tracks:
-        collection.tracks.append(track)
+    if tr not in col.tracks:
+        col.tracks.append(tr)
         db.commit()
     return {"message": "Track ajouté à la collection"}
