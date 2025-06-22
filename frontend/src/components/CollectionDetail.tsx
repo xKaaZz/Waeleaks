@@ -37,39 +37,24 @@ export default function CollectionDetail() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [currentIndex, setCurrentIndex] = useState(0)
+  const [hasInteracted, setHasInteracted] = useState(false)
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const res = await api.get(`/collections/${id}`)
-        setCollection(res.data)
-      } catch {
-        setError('Erreur de chargement')
-      } finally {
-        setIsLoading(false)
-      }
-    }
-    if (id) fetchData()
+    api.get(`/collections/${id}`)
+      .then(res => setCollection(res.data))
+      .catch(() => setError('Erreur de chargement'))
+      .finally(() => setIsLoading(false))
   }, [id])
 
   if (isLoading)
-    return (
-      <Center h="50vh">
-        <Spinner size="xl" />
-      </Center>
-    )
+    return <Center h="50vh"><Spinner size="xl"/></Center>
   if (error || !collection)
-    return (
-      <Center h="50vh">
-        <Text color="red.500">{error || 'Collection non trouvée'}</Text>
-      </Center>
-    )
+    return <Center h="50vh"><Text color="red.500">{error}</Text></Center>
 
   const playlist = collection.tracks.map(track => ({
     title: track.title,
-    url: `http://192.168.1.194:8002/api/audio/${track.audio_url.replace('uploads/audio/', '')}`,
+    url: `http://192.168.1.194:8002/api/audio/${track.audio_url.split('/').pop()}`,
   }))
-
   const bg = useColorModeValue('gray.100', 'gray.700')
 
   return (
@@ -84,9 +69,7 @@ export default function CollectionDetail() {
             borderRadius="lg"
             fallbackSrc="/no-image.png"
           />
-          <Heading size={{ base: 'lg', md: '2xl' }}>
-            {collection.title}
-          </Heading>
+          <Heading size={{ base: 'lg', md: '2xl' }}>{collection.title}</Heading>
           <Text fontSize={{ base: 'md', md: 'lg' }} color="gray.600">
             {collection.description}
           </Text>
@@ -96,20 +79,20 @@ export default function CollectionDetail() {
 
         {playlist.length > 0 && (
           <>
-            <Heading size="lg" mb={4}>
-              🎧 Lecture automatique
-            </Heading>
+            <Heading size="lg" mb={4}>🎧 Lecture automatique</Heading>
             <AudioPlayer
               playlist={playlist}
               currentIndex={currentIndex}
-              onSelectTrack={setCurrentIndex}
+              onSelectTrack={index => {
+                setCurrentIndex(index)
+                setHasInteracted(true)
+              }}
+              hasInteracted={hasInteracted}
             />
 
             <Divider my={8} />
 
-            <Heading size="lg" mb={4}>
-              Sons
-            </Heading>
+            <Heading size="lg" mb={4}>Sons</Heading>
             <SimpleGrid columns={{ base: 1, sm: 2, md: 3 }} spacing={4}>
               {playlist.map((sound, index) => (
                 <Box
@@ -120,7 +103,10 @@ export default function CollectionDetail() {
                   bg={bg}
                   cursor="pointer"
                   _hover={{ bg: 'blue.50' }}
-                  onClick={() => setCurrentIndex(index)}
+                  onClick={() => {
+                    setCurrentIndex(index)
+                    setHasInteracted(true)
+                  }}
                 >
                   <Text fontWeight="bold">{sound.title}</Text>
                   <Text fontSize="sm" color="gray.500">

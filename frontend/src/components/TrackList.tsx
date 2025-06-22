@@ -6,7 +6,6 @@ import {
   Text,
   Heading,
   SimpleGrid,
-  Button,
   useColorModeValue,
 } from '@chakra-ui/react'
 import AudioPlayer from './AudioPlayer'
@@ -25,17 +24,17 @@ interface Sound {
 export default function TrackList() {
   const [tracks, setTracks] = useState<Track[]>([])
   const [currentIndex, setCurrentIndex] = useState(0)
+  const [hasInteracted, setHasInteracted] = useState(false)
 
   useEffect(() => {
-    api
-      .get('/tracks/')
+    api.get('/tracks/')
       .then(res => setTracks(res.data))
       .catch(() => setTracks([]))
   }, [])
 
   const playlist: Sound[] = tracks.map(track => ({
     title: track.title,
-    url: `http://192.168.1.194:8002/api/audio/${track.audio_url.replace('uploads/audio/', '')}`,
+    url: `http://192.168.1.194:8002/api/audio/${track.audio_url.split('/').pop()}`,
   }))
 
   const bg = useColorModeValue('gray.100', 'gray.700')
@@ -51,7 +50,11 @@ export default function TrackList() {
           <AudioPlayer
             playlist={playlist}
             currentIndex={currentIndex}
-            onSelectTrack={setCurrentIndex}
+            onSelectTrack={index => {
+              setCurrentIndex(index)
+              setHasInteracted(true)
+            }}
+            hasInteracted={hasInteracted}
           />
         </Box>
       )}
@@ -66,7 +69,10 @@ export default function TrackList() {
             bg={bg}
             cursor="pointer"
             _hover={{ bg: 'blue.50' }}
-            onClick={() => setCurrentIndex(index)}
+            onClick={() => {
+              setCurrentIndex(index)
+              setHasInteracted(true)
+            }}
           >
             <Text fontWeight="bold">{sound.title}</Text>
             <Text fontSize="sm" color="gray.500">

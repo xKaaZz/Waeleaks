@@ -10,14 +10,16 @@ interface AudioPlayerProps {
   playlist: Sound[]
   currentIndex: number
   onSelectTrack: (index: number) => void
+  hasInteracted: boolean
 }
 
 export default function AudioPlayer({
   playlist,
   currentIndex,
   onSelectTrack,
+  hasInteracted,
 }: AudioPlayerProps) {
-  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const audioRef = useRef<HTMLAudioElement>(null)
   const currentSound = playlist[currentIndex]
 
   useEffect(() => {
@@ -25,14 +27,13 @@ export default function AudioPlayer({
     if (!audio) return
 
     audio.load()
-
-    // lecture automatique après changement de source
-    setTimeout(() => {
-      audio
-        .play()
-        .catch((err) => console.warn('Lecture refusée ou bloquée :', err))
-    }, 50)
-  }, [currentIndex])
+    // si l'utilisateur a déjà cliqué, on lance la lecture
+    if (hasInteracted) {
+      setTimeout(() => {
+        audio.play().catch(() => {})
+      }, 50)
+    }
+  }, [currentIndex, hasInteracted])
 
   const handleEnded = () => {
     if (currentIndex < playlist.length - 1) {
@@ -53,19 +54,13 @@ export default function AudioPlayer({
       />
       <HStack mt={2}>
         <Button
-          onClick={() => {
-            if (currentIndex > 0) onSelectTrack(currentIndex - 1)
-          }}
+          onClick={() => onSelectTrack(currentIndex - 1)}
           isDisabled={currentIndex === 0}
         >
           Précédent
         </Button>
         <Button
-          onClick={() => {
-            if (currentIndex < playlist.length - 1) {
-              onSelectTrack(currentIndex + 1)
-            }
-          }}
+          onClick={() => onSelectTrack(currentIndex + 1)}
           isDisabled={currentIndex === playlist.length - 1}
         >
           Suivant
