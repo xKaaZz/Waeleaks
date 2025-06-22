@@ -36,25 +36,18 @@ interface Collection {
 }
 
 export default function CollectionDetail() {
-  // ─── Hooks en haut ──────────────────────────────────────────────────────────
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-
   const [collection, setCollection] = useState<Collection | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [hasInteracted, setHasInteracted] = useState(false)
-  const [progress, setProgress] = useState(0) // 0 → 1
-
-  // Thème & couleurs
-  const headerBg     = useColorModeValue('gray.100', 'gray.700')
-  const trackHover   = useColorModeValue('gray.200', 'gray.600')
-  const currentBg    = useColorModeValue('teal.50',  'teal.900')
-  const accent       = useColorModeValue('teal.500', 'teal.300')
+  const [progress, setProgress] = useState(0)
 
   useEffect(() => {
-    api.get<Collection>(`/collections/${id}`)
+    api
+      .get<Collection>(`/collections/${id}`)
       .then(res => setCollection(res.data))
       .catch(() => setError('Erreur de chargement'))
       .finally(() => setIsLoading(false))
@@ -66,7 +59,6 @@ export default function CollectionDetail() {
         <Spinner size="xl" />
       </Center>
     )
-
   if (error || !collection)
     return (
       <Center h="50vh">
@@ -74,15 +66,21 @@ export default function CollectionDetail() {
       </Center>
     )
 
-  // Build playlist URLs
   const playlist = collection.tracks.map(track => ({
     title: track.title,
-    url: `http://192.168.1.194:8002/api/audio/${track.audio_url.split('/').pop()}`,
+    url: `http://192.168.1.194:8002/api/audio/${track.audio_url
+      .split('/')
+      .pop()}`,
   }))
+
+  const headerBg = useColorModeValue('gray.100', 'gray.700')
+  const trackHover = useColorModeValue('gray.200', 'gray.600')
+  const currentBg = useColorModeValue('teal.50', 'teal.900')
+  const accent = useColorModeValue('teal.500', 'teal.300')
 
   return (
     <Box bg="gray.50" w="100%" minH="100vh" py={6} px={{ base: 4, md: 8 }}>
-      {/* ─── Album Header ─────────────────────────────────────────────────────── */}
+      {/* Album Header */}
       <Flex
         direction={{ base: 'column', md: 'row' }}
         align="center"
@@ -127,7 +125,7 @@ export default function CollectionDetail() {
         </VStack>
       </Flex>
 
-      {/* ─── Global Audio Player ─────────────────────────────────────────────── */}
+      {/* Audio Player */}
       <Box mb={8}>
         <AudioPlayer
           playlist={playlist}
@@ -141,7 +139,7 @@ export default function CollectionDetail() {
         />
       </Box>
 
-      {/* ─── Track List with Conic Border ──────────────────────────────────── */}
+      {/* Track List */}
       <Heading size="lg" mb={4}>
         Liste des morceaux
       </Heading>
@@ -154,21 +152,15 @@ export default function CollectionDetail() {
               key={idx}
               position="relative"
               bg={isCurrent ? currentBg : headerBg}
-              cursor="pointer"
-              p={3}
+              borderLeftWidth={isCurrent ? '4px' : 0}
+              borderLeftColor={isCurrent ? accent : 'transparent'}
+              borderRadius="md"
               _hover={{ bg: isCurrent ? currentBg : trackHover }}
+              p={3}
+              cursor="pointer"
               onClick={() => {
                 setCurrentIndex(idx)
                 setHasInteracted(true)
-              }}
-
-              /* ── Border conique en style inline ────────────────────────── */
-              border="4px solid transparent"
-              borderRadius="md"
-              style={{
-                borderImage: isCurrent
-                  ? `conic-gradient(${accent} ${progress * 360}deg, transparent 0deg) 1`
-                  : undefined,
               }}
             >
               <Flex justify="space-between" align="center">
@@ -182,11 +174,28 @@ export default function CollectionDetail() {
                 </HStack>
                 <IconButton
                   aria-label={isCurrent ? 'Pause' : 'Play'}
-                  icon={isCurrent ? <FiPause color={accent} /> : <FiPlay color={accent} />}
+                  icon={isCurrent ? (
+                    <FiPause color={accent} />
+                  ) : (
+                    <FiPlay color={accent} />
+                  )}
                   size="sm"
                   variant="ghost"
                 />
               </Flex>
+
+              {/* Barre de progression */}
+              {isCurrent && (
+                <Box
+                  position="absolute"
+                  bottom="0"
+                  left="0"
+                  height="3px"
+                  width={`${progress * 100}%`}
+                  bg={accent}
+                  borderBottomLeftRadius="md"
+                />
+              )}
             </ListItem>
           )
         })}
