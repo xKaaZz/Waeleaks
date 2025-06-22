@@ -178,27 +178,9 @@ export default function CollectionDetail() {
                 />
               )}
 
+              {/* contenu de la ligne */}
               <Flex justify="space-between" align="center">
-                <HStack spacing={4}>
-                  <Text fontWeight="bold" w="24px" textAlign="right">
-                    {idx + 1}.
-                  </Text>
-                  <Text fontWeight={isCurrent ? 'semibold' : 'normal'}>
-                    {sound.title}
-                  </Text>
-                </HStack>
-                <IconButton
-                  aria-label={isCurrent ? 'Pause' : 'Play'}
-                  icon={
-                    isCurrent ? (
-                      <FiPause color={accent} />
-                    ) : (
-                      <FiPlay color={accent} />
-                    )
-                  }
-                  size="sm"
-                  variant="ghost"
-                />
+                {/* ... */}
               </Flex>
 
               {/* barre basse */}
@@ -214,17 +196,17 @@ export default function CollectionDetail() {
                 />
               )}
 
-              {/* barre droite à la fin */}
+              {/* barre verticale droite à la fin */}
               {isComplete && (
                 <Box
                   position="absolute"
                   top="0"
                   right="0"
-                  width="3px"
+                  width="4px"                     // ← même largeur qu'à gauche
                   height="100%"
                   bg={accent}
-                  borderTopRightRadius="md"
-                  borderBottomRightRadius="md"
+                  borderTopRightRadius="md"      // ← même rayon qu'à gauche
+                  borderBottomRightRadius="md"   // ← même rayon qu'à gauche
                 />
               )}
             </ListItem>
