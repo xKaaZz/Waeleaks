@@ -10,9 +10,10 @@ import {
   Spinner,
   Center,
   Button,
+  SimpleGrid,
+  useColorModeValue,
 } from '@chakra-ui/react'
 import api from '../axiosConfig'
-import TrackPlayer from './TrackPlayer'
 import AudioPlayer from './AudioPlayer'
 
 interface Track {
@@ -35,6 +36,7 @@ export default function CollectionDetail() {
   const [collection, setCollection] = useState<Collection | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [currentIndex, setCurrentIndex] = useState(0)
 
   useEffect(() => {
     async function fetchData() {
@@ -63,6 +65,13 @@ export default function CollectionDetail() {
       </Center>
     )
 
+  const playlist = collection.tracks.map(track => ({
+    title: track.title,
+    url: `http://192.168.1.194:8002/api/audio/${track.audio_url.replace('uploads/audio/', '')}`,
+  }))
+
+  const bg = useColorModeValue('gray.100', 'gray.700')
+
   return (
     <Box bg="gray.50" w="100%" minH="100vh">
       <Box px={{ base: 4, md: 8 }} py={4}>
@@ -73,7 +82,7 @@ export default function CollectionDetail() {
             w={{ base: '100%', sm: '80%', md: '300px' }}
             objectFit="cover"
             borderRadius="lg"
-            fallbackSrc="https://via.placeholder.com/300x400?text=No+Image"
+            fallbackSrc="/no-image.png"
           />
           <Heading size={{ base: 'lg', md: '2xl' }}>
             {collection.title}
@@ -85,18 +94,45 @@ export default function CollectionDetail() {
 
         <Divider my={6} />
 
-        <Box>
-          <Heading size="lg" mb={4}>
-            Sons
-          </Heading>
-          <VStack spacing={2} align="stretch">
-            {collection.tracks.map(track => (
-              <TrackPlayer key={track.id} track={track} />
-            ))}
-          </VStack>
-        </Box>
+        {playlist.length > 0 && (
+          <>
+            <Heading size="lg" mb={4}>
+              🎧 Lecture automatique
+            </Heading>
+            <AudioPlayer
+              playlist={playlist}
+              currentIndex={currentIndex}
+              onSelectTrack={setCurrentIndex}
+            />
 
-        <Box textAlign="center" mt={6}>
+            <Divider my={8} />
+
+            <Heading size="lg" mb={4}>
+              Sons
+            </Heading>
+            <SimpleGrid columns={{ base: 1, sm: 2, md: 3 }} spacing={4}>
+              {playlist.map((sound, index) => (
+                <Box
+                  key={index}
+                  p={4}
+                  borderWidth="1px"
+                  borderRadius="lg"
+                  bg={bg}
+                  cursor="pointer"
+                  _hover={{ bg: 'blue.50' }}
+                  onClick={() => setCurrentIndex(index)}
+                >
+                  <Text fontWeight="bold">{sound.title}</Text>
+                  <Text fontSize="sm" color="gray.500">
+                    Cliquer pour jouer
+                  </Text>
+                </Box>
+              ))}
+            </SimpleGrid>
+          </>
+        )}
+
+        <Box textAlign="center" mt={8}>
           <Button
             colorScheme="green"
             onClick={() => navigate(`/collection/${collection.id}/add`)}
@@ -104,21 +140,6 @@ export default function CollectionDetail() {
             Ajouter un son
           </Button>
         </Box>
-
-        {collection.tracks.length > 0 && (
-          <>
-            <Divider my={8} />
-            <Heading size="md" mb={4} textAlign="center">
-              🎧 Lecture automatique
-            </Heading>
-            <AudioPlayer
-              playlist={collection.tracks.map(track => ({
-                title: track.title,
-                url: `http://192.168.1.194:8002/api/audio/${track.audio_url.replace('uploads/audio/', '')}`,
-              }))}
-            />
-          </>
-        )}
       </Box>
     </Box>
   )

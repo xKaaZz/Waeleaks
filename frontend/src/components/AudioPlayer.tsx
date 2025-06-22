@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { Box, Button, HStack, Text } from '@chakra-ui/react'
 
 interface Sound {
@@ -8,29 +8,44 @@ interface Sound {
 
 interface AudioPlayerProps {
   playlist: Sound[]
+  currentIndex: number
+  onSelectTrack: (index: number) => void
 }
 
-export default function AudioPlayer({ playlist }: AudioPlayerProps) {
+export default function AudioPlayer({
+  playlist,
+  currentIndex,
+  onSelectTrack,
+}: AudioPlayerProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null)
-  const [currentIndex, setCurrentIndex] = useState(0)
-
   const currentSound = playlist[currentIndex]
 
   useEffect(() => {
     if (audioRef.current) {
-      audioRef.current.load() // prépare la source
+      audioRef.current.load()
+      setTimeout(() => {
+        audioRef.current?.play().catch(err => {
+          console.warn('Lecture bloquée :', err)
+        })
+      }, 100)
     }
   }, [currentIndex])
 
   const handleEnded = () => {
     if (currentIndex < playlist.length - 1) {
-      setCurrentIndex(currentIndex + 1)
-      // Important : attendre que load soit terminé
-      setTimeout(() => {
-        audioRef.current?.play().catch((err) => {
-          console.warn('Lecture bloquée :', err)
-        })
-      }, 100) // petit délai pour laisser le navigateur charger
+      onSelectTrack(currentIndex + 1)
+    }
+  }
+
+  const handlePrevious = () => {
+    if (currentIndex > 0) {
+      onSelectTrack(currentIndex - 1)
+    }
+  }
+
+  const handleNext = () => {
+    if (currentIndex < playlist.length - 1) {
+      onSelectTrack(currentIndex + 1)
     }
   }
 
@@ -46,21 +61,11 @@ export default function AudioPlayer({ playlist }: AudioPlayerProps) {
         onEnded={handleEnded}
       />
       <HStack mt={2}>
-        <Button
-          onClick={() => setCurrentIndex(Math.max(currentIndex - 1, 0))}
-          isDisabled={currentIndex === 0}
-        >
+        <Button onClick={handlePrevious} isDisabled={currentIndex === 0}>
           Précédent
         </Button>
         <Button
-          onClick={() => {
-            if (currentIndex < playlist.length - 1) {
-              setCurrentIndex(currentIndex + 1)
-              setTimeout(() => {
-                audioRef.current?.play().catch(() => {})
-              }, 100)
-            }
-          }}
+          onClick={handleNext}
           isDisabled={currentIndex === playlist.length - 1}
         >
           Suivant
