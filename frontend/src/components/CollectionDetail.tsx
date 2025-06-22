@@ -32,7 +32,7 @@ interface Collection {
   title: string
   description: string
   cover_url: string
-  tracks: Track[]
+  tracks?: Track[]
 }
 
 export default function CollectionDetail() {
@@ -70,7 +70,7 @@ export default function CollectionDetail() {
   }
 
   // Prépare le playlist pour l'AudioPlayer
-  const playlist = collection.tracks.map(track => ({
+  const playlist = (collection.tracks || []).map(track => ({
     title: track.title,
     url: `http://192.168.1.194:8002/api/audio/${track.audio_url.split('/').pop()}`,
   }))
