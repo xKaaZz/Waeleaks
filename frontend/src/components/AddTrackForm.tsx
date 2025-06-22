@@ -36,11 +36,11 @@ export default function AddTrackForm() {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    api.get<Collection[]>('/collections')
+    api.get<Collection[]>('/collections/')
       .then(res => setCollections(res.data))
       .catch(() => toast({ title: 'Erreur chargement collections', status: 'error' }))
 
-    api.get<Track[]>('/tracks')
+    api.get<Track[]>('/tracks/')
       .then(res => setAllTracks(res.data))
       .catch(() => toast({ title: 'Erreur chargement sons', status: 'error' }))
   }, [])
