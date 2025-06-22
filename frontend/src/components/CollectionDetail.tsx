@@ -43,23 +43,34 @@ export default function CollectionDetail() {
   const [error, setError] = useState<string | null>(null)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [hasInteracted, setHasInteracted] = useState(false)
+  const [progress, setProgress] = useState(0)
 
   useEffect(() => {
-    api.get<Collection>(`/collections/${id}`)
+    api
+      .get<Collection>(`/collections/${id}`)
       .then(res => setCollection(res.data))
       .catch(() => setError('Erreur de chargement'))
       .finally(() => setIsLoading(false))
   }, [id])
 
   if (isLoading)
-    return <Center h="50vh"><Spinner size="xl" /></Center>
+    return (
+      <Center h="50vh">
+        <Spinner size="xl" />
+      </Center>
+    )
   if (error || !collection)
-    return <Center h="50vh"><Text color="red.500">{error}</Text></Center>
+    return (
+      <Center h="50vh">
+        <Text color="red.500">{error}</Text>
+      </Center>
+    )
 
-  // build playlist URLs
   const playlist = collection.tracks.map(track => ({
     title: track.title,
-    url: `http://192.168.1.194:8002/api/audio/${track.audio_url.split('/').pop()}`,
+    url: `http://192.168.1.194:8002/api/audio/${track.audio_url
+      .split('/')
+      .pop()}`,
   }))
 
   const headerBg = useColorModeValue('gray.100', 'gray.700')
@@ -99,17 +110,15 @@ export default function CollectionDetail() {
               size="lg"
               onClick={() => {
                 setHasInteracted(true)
-                // si play déjà en cours, pause, sinon lecture du premier
-                if (hasInteracted) {
-                  // toggle: onSelectTrack n’est pas géré ici, on laisse le player gérer
-                } else {
-                  setCurrentIndex(0)
-                }
+                if (!hasInteracted) setCurrentIndex(0)
               }}
             >
               {hasInteracted ? 'Pause' : 'Play Album'}
             </Button>
-            <Button onClick={() => navigate(`/collection/${collection.id}/add`)} variant="outline">
+            <Button
+              onClick={() => navigate(`/collection/${collection.id}/add`)}
+              variant="outline"
+            >
               Ajouter un son
             </Button>
           </HStack>
@@ -126,20 +135,27 @@ export default function CollectionDetail() {
             setHasInteracted(true)
           }}
           hasInteracted={hasInteracted}
+          onProgress={setProgress}
         />
       </Box>
 
       {/* Track List */}
-      <Heading size="lg" mb={4}>Liste des morceaux</Heading>
+      <Heading size="lg" mb={4}>
+        Liste des morceaux
+      </Heading>
       <List spacing={2}>
         {playlist.map((sound, idx) => {
           const isCurrent = idx === currentIndex
           return (
             <ListItem
+              as="div"
               key={idx}
+              position="relative"
               bg={isCurrent ? currentBg : headerBg}
-              _hover={{ bg: isCurrent ? currentBg : trackHover }}
+              borderLeftWidth={isCurrent ? '4px' : 0}
+              borderLeftColor={isCurrent ? accent : 'transparent'}
               borderRadius="md"
+              _hover={{ bg: isCurrent ? currentBg : trackHover }}
               p={3}
               cursor="pointer"
               onClick={() => {
@@ -147,7 +163,7 @@ export default function CollectionDetail() {
                 setHasInteracted(true)
               }}
             >
-              <HStack justify="space-between">
+              <Flex justify="space-between" align="center">
                 <HStack spacing={4}>
                   <Text fontWeight="bold" w="24px" textAlign="right">
                     {idx + 1}.
@@ -158,15 +174,18 @@ export default function CollectionDetail() {
                 </HStack>
                 <IconButton
                   aria-label={isCurrent ? 'Pause' : 'Play'}
-                  icon={isCurrent ? <FiPause color={accent} /> : <FiPlay color={accent} />}
+                  icon={isCurrent ? (
+                    <FiPause color={accent} />
+                  ) : (
+                    <FiPlay color={accent} />
+                  )}
                   size="sm"
                   variant="ghost"
                 />
-              </HStack>
-            </ListItem>
-          )
-        })}
-      </List>
-    </Box>
-  )
-}
+              </Flex>
+
+              {/* Barre de progression */}
+              {isCurrent && (
+                <Box
+                  position="absolute"
+                  bottom

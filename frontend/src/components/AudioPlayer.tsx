@@ -4,6 +4,7 @@ import {
   Flex,
   IconButton,
   Text,
+  Progress,
   Slider,
   SliderTrack,
   SliderFilledTrack,
@@ -27,6 +28,7 @@ interface AudioPlayerProps {
   currentIndex: number
   onSelectTrack: (index: number) => void
   hasInteracted: boolean
+  onProgress: (p: number) => void
 }
 
 export default function AudioPlayer({
@@ -34,43 +36,56 @@ export default function AudioPlayer({
   currentIndex,
   onSelectTrack,
   hasInteracted,
+  onProgress,
 }: AudioPlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
+
   const bg = useColorModeValue('white', 'gray.800')
   const accent = useColorModeValue('teal.500', 'teal.300')
 
   const currentSound = playlist[currentIndex]
 
-  // Au changement de piste ou interaction :
   useEffect(() => {
     const audio = audioRef.current!
     audio.load()
+
+    // si utilisateur a interagi, auto-play
     if (hasInteracted) {
       audio.play().catch(() => {})
     }
-    const onLoaded = () => setDuration(audio.duration)
-    const onTime = () => setCurrentTime(audio.currentTime)
+
+    const onLoaded = () => {
+      setDuration(audio.duration)
+      onProgress(0)
+    }
+    const onTime = () => {
+      const p = audio.currentTime / audio.duration
+      setCurrentTime(audio.currentTime)
+      onProgress(p)
+    }
     const onPlay = () => setIsPlaying(true)
     const onPause = () => setIsPlaying(false)
+    const onEnded = () => {
+      if (currentIndex < playlist.length - 1) {
+        onSelectTrack(currentIndex + 1)
+      }
+    }
 
     audio.addEventListener('loadedmetadata', onLoaded)
     audio.addEventListener('timeupdate', onTime)
     audio.addEventListener('play', onPlay)
     audio.addEventListener('pause', onPause)
-    audio.addEventListener('ended', () => {
-      if (currentIndex < playlist.length - 1) {
-        onSelectTrack(currentIndex + 1)
-      }
-    })
+    audio.addEventListener('ended', onEnded)
 
     return () => {
       audio.removeEventListener('loadedmetadata', onLoaded)
       audio.removeEventListener('timeupdate', onTime)
       audio.removeEventListener('play', onPlay)
       audio.removeEventListener('pause', onPause)
+      audio.removeEventListener('ended', onEnded)
     }
   }, [currentIndex, hasInteracted])
 
@@ -101,7 +116,7 @@ export default function AudioPlayer({
             {currentSound.title}
           </Text>
         </Flex>
-        <Flex align="center">
+        <Flex>
           <IconButton
             aria-label="Précédent"
             icon={<FiChevronLeft />}
@@ -118,7 +133,7 @@ export default function AudioPlayer({
         </Flex>
       </Flex>
 
-      <Flex align="center" gap={2}>
+      <Flex align="center" gap={2} mb={2}>
         <Text fontSize="sm" whiteSpace="nowrap">
           {formatTime(currentTime)}
         </Text>
@@ -143,7 +158,11 @@ export default function AudioPlayer({
         </Text>
       </Flex>
 
-      <audio ref={audioRef} src={currentSound.url} style={{ display: 'none' }} />
+      <audio
+        ref={audioRef}
+        src={currentSound.url}
+        style={{ display: 'none' }}
+      />
     </Box>
   )
 }
