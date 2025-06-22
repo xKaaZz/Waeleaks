@@ -20,7 +20,7 @@ class TrackCreate(TrackBase):
 class TrackUpdate(BaseModel):
     collection_ids: List[int]  # Permet d'assigner le son à plusieurs collections
 
-class Track(TrackBase):
+class Track(CollectionNested, TrackBase):
     id: int
     collections: List[CollectionNested] = []
 
@@ -32,6 +32,7 @@ class Track(TrackBase):
 class TrackNested(BaseModel):
     id: int
     title: str
+    audio_url: str   # ← on récupère maintenant aussi le chemin du fichier audio
 
     class Config:
         from_attributes = True
@@ -46,7 +47,7 @@ class CollectionCreate(CollectionBase):
 
 class Collection(CollectionBase):
     id: int
-    tracks: List[TrackNested] = []
+    tracks: List[TrackNested] = []  # ← chaque piste a désormais audio_url
 
     class Config:
         from_attributes = True
