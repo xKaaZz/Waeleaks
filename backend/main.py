@@ -131,7 +131,25 @@ def create_collection(
             shutil.copyfileobj(cover.file, buf)
     new = models.TrackCollection(title=title, description=description, cover_url=cover_path)
     db.add(new); db.commit(); db.refresh(new)
+
+    users = db.query(models.User).filter(
+        models.User.telegram_id.isnot(None),
+        models.User.telegram_token.isnot(None)
+    ).all()
+    for user in users:
+        try:
+            msg = f"🆕 Nouvelle collection : « {title} »"
+            res = requests.post(
+                f"https://api.telegram.org/bot{user.telegram_token}/sendMessage",
+                data={"chat_id": user.telegram_id, "text": msg}
+            )
+            if res.status_code != 200:
+                print(f"[❌ Telegram] Collection: {res.text}")
+        except Exception as e:
+            print(f"[⚠️ Telegram EXCEPTION] Collection: {e}")
+
     return new
+
 
 # Ajout direct de piste à une collection (upload)
 @app.post("/api/collections/{collection_id}/tracks", response_model=schemas.Track)
@@ -147,14 +165,31 @@ def add_track_to_collection(
         shutil.copyfileobj(audio.file, buf)
 
     tr = models.Track(title=title, audio_url=ap)
-    # on lie la piste à la collection via la relation M2M
     col = db.query(models.TrackCollection).get(collection_id)
     if not col:
         raise HTTPException(404, "Collection introuvable")
     tr.collections.append(col)
 
     db.add(tr); db.commit(); db.refresh(tr)
+
+    users = db.query(models.User).filter(
+        models.User.telegram_id.isnot(None),
+        models.User.telegram_token.isnot(None)
+    ).all()
+    for user in users:
+        try:
+            msg = f"🎵 Nouveau son dans « {col.title} » : {title}"
+            res = requests.post(
+                f"https://api.telegram.org/bot{user.telegram_token}/sendMessage",
+                data={"chat_id": user.telegram_id, "text": msg}
+            )
+            if res.status_code != 200:
+                print(f"[❌ Telegram] Track: {res.text}")
+        except Exception as e:
+            print(f"[⚠️ Telegram EXCEPTION] Track: {e}")
+
     return tr
+
 
 # Ajout d’un son « libre »
 @app.post("/api/tracks", response_model=schemas.Track)
@@ -170,7 +205,25 @@ def add_standalone_track(
 
     tr = models.Track(title=title, audio_url=ap)
     db.add(tr); db.commit(); db.refresh(tr)
+
+    users = db.query(models.User).filter(
+        models.User.telegram_id.isnot(None),
+        models.User.telegram_token.isnot(None)
+    ).all()
+    for user in users:
+        try:
+            msg = f"🎶 Nouveau son ajouté : {title}"
+            res = requests.post(
+                f"https://api.telegram.org/bot{user.telegram_token}/sendMessage",
+                data={"chat_id": user.telegram_id, "text": msg}
+            )
+            if res.status_code != 200:
+                print(f"[❌ Telegram] Track libre: {res.text}")
+        except Exception as e:
+            print(f"[⚠️ Telegram EXCEPTION] Track libre: {e}")
+
     return tr
+
 
 # Lecture des pistes M2M d’une collection (optionnel, front peut utiliser GET /collections/{id})
 @app.get("/api/collections/{collection_id}/tracks", response_model=List[schemas.Track])
