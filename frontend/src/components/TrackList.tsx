@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react'
 import api from '../axiosConfig'
 import {
-  VStack,
   Box,
-  Text,
-  Heading,
   SimpleGrid,
+  Text,
+  IconButton,
   useColorModeValue,
 } from '@chakra-ui/react'
+import { FiPlay } from 'react-icons/fi'
 import AudioPlayer from './AudioPlayer'
 
 interface Track {
@@ -27,31 +27,31 @@ export default function TrackList() {
   const [hasInteracted, setHasInteracted] = useState(false)
 
   useEffect(() => {
-    api.get('/tracks/')
+    api
+      .get<Track[]>('/tracks/')
       .then(res => setTracks(res.data))
       .catch(() => setTracks([]))
   }, [])
 
   const playlist: Sound[] = tracks.map(track => ({
     title: track.title,
-    url: `http://192.168.1.194:8002/api/audio/${track.audio_url.split('/').pop()}`,
+    url: `http://192.168.1.194:8002/api/audio/${track.audio_url
+      .split('/')
+      .pop()}`,
   }))
 
-  const bg = useColorModeValue('gray.100', 'gray.700')
+  const cardBg = useColorModeValue('gray.100', 'gray.700')
+  const cardHover = useColorModeValue('gray.200', 'gray.600')
 
   return (
     <Box>
-      <Heading size="lg" mb={4}>
-        Bibliothèque – Tous les sons
-      </Heading>
-
       {playlist.length > 0 && (
         <Box mb={6}>
           <AudioPlayer
             playlist={playlist}
             currentIndex={currentIndex}
-            onSelectTrack={index => {
-              setCurrentIndex(index)
+            onSelectTrack={idx => {
+              setCurrentIndex(idx)
               setHasInteracted(true)
             }}
             hasInteracted={hasInteracted}
@@ -60,24 +60,31 @@ export default function TrackList() {
       )}
 
       <SimpleGrid columns={{ base: 1, sm: 2, md: 3 }} spacing={4}>
-        {playlist.map((sound, index) => (
+        {playlist.map((sound, idx) => (
           <Box
-            key={index}
-            p={4}
-            borderWidth="1px"
+            key={idx}
+            bg={cardBg}
+            _hover={{ bg: cardHover }}
             borderRadius="lg"
-            bg={bg}
+            overflow="hidden"
             cursor="pointer"
-            _hover={{ bg: 'blue.50' }}
             onClick={() => {
-              setCurrentIndex(index)
+              setCurrentIndex(idx)
               setHasInteracted(true)
             }}
           >
-            <Text fontWeight="bold">{sound.title}</Text>
-            <Text fontSize="sm" color="gray.500">
-              Cliquer pour jouer
-            </Text>
+            <Box p={4} display="flex" alignItems="center">
+              <IconButton
+                aria-label="Play"
+                icon={<FiPlay />}
+                size="lg"
+                colorScheme="teal"
+                mr={3}
+              />
+              <Text fontWeight="semibold" isTruncated>
+                {sound.title}
+              </Text>
+            </Box>
           </Box>
         ))}
       </SimpleGrid>

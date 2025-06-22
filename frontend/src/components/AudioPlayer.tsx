@@ -1,5 +1,13 @@
-import { useEffect, useRef } from 'react'
-import { Box, Button, HStack, Text } from '@chakra-ui/react'
+import { useEffect, useRef, useState } from 'react'
+import {
+  Box,
+  Flex,
+  IconButton,
+  Text,
+  Progress,
+  useColorModeValue,
+} from '@chakra-ui/react'
+import { FiPlay, FiPause, FiChevronLeft, FiChevronRight } from 'react-icons/fi'
 
 interface Sound {
   title: string
@@ -20,18 +28,29 @@ export default function AudioPlayer({
   hasInteracted,
 }: AudioPlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [progress, setProgress] = useState(0)
+  const bg = useColorModeValue('white', 'gray.800')
+
   const currentSound = playlist[currentIndex]
 
   useEffect(() => {
-    const audio = audioRef.current
-    if (!audio) return
-
+    const audio = audioRef.current!
     audio.load()
-    // si l'utilisateur a déjà cliqué, on lance la lecture
+
     if (hasInteracted) {
-      setTimeout(() => {
-        audio.play().catch(() => {})
-      }, 50)
+      audio.play().catch(() => {})
+    }
+
+    const update = () => {
+      if (audio.duration) setProgress(audio.currentTime / audio.duration)
+    }
+    audio.addEventListener('timeupdate', update)
+    audio.addEventListener('play', () => setIsPlaying(true))
+    audio.addEventListener('pause', () => setIsPlaying(false))
+
+    return () => {
+      audio.removeEventListener('timeupdate', update)
     }
   }, [currentIndex, hasInteracted])
 
@@ -41,31 +60,58 @@ export default function AudioPlayer({
     }
   }
 
+  const togglePlay = () => {
+    const audio = audioRef.current!
+    isPlaying ? audio.pause() : audio.play().catch(() => {})
+  }
+
   return (
-    <Box borderWidth="1px" p={4} borderRadius="md" bg="white" w="100%">
-      <Text fontWeight="bold" mb={2}>
-        Lecture : {currentSound.title}
-      </Text>
+    <Box bg={bg} borderRadius="lg" boxShadow="md" p={4} w="100%">
+      <Flex align="center" justify="space-between" mb={2}>
+        <Flex align="center">
+          <IconButton
+            aria-label={isPlaying ? 'Pause' : 'Play'}
+            icon={isPlaying ? <FiPause /> : <FiPlay />}
+            onClick={togglePlay}
+            colorScheme="teal"
+            size="lg"
+            mr={3}
+          />
+          <Text fontSize="lg" fontWeight="bold" isTruncated maxW="300px">
+            {currentSound.title}
+          </Text>
+        </Flex>
+        <Flex>
+          <IconButton
+            aria-label="Précédent"
+            icon={<FiChevronLeft />}
+            onClick={() => onSelectTrack(currentIndex - 1)}
+            isDisabled={currentIndex === 0}
+            mr={2}
+          />
+          <IconButton
+            aria-label="Suivant"
+            icon={<FiChevronRight />}
+            onClick={() => onSelectTrack(currentIndex + 1)}
+            isDisabled={currentIndex === playlist.length - 1}
+          />
+        </Flex>
+      </Flex>
+
+      <Progress
+        value={progress * 100}
+        size="sm"
+        colorScheme="teal"
+        mb={2}
+        borderRadius="sm"
+      />
+
       <audio
         ref={audioRef}
         src={currentSound.url}
-        controls
         onEnded={handleEnded}
+        style={{ display: 'none' }}
       />
-      <HStack mt={2}>
-        <Button
-          onClick={() => onSelectTrack(currentIndex - 1)}
-          isDisabled={currentIndex === 0}
-        >
-          Précédent
-        </Button>
-        <Button
-          onClick={() => onSelectTrack(currentIndex + 1)}
-          isDisabled={currentIndex === playlist.length - 1}
-        >
-          Suivant
-        </Button>
-      </HStack>
     </Box>
   )
 }
