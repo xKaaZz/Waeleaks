@@ -16,16 +16,21 @@ export default function AudioPlayer({ playlist }: AudioPlayerProps) {
 
   const currentSound = playlist[currentIndex]
 
-  // On ne tente plus play() automatiquement (bloqué par le navigateur)
   useEffect(() => {
     if (audioRef.current) {
-      audioRef.current.load()
+      audioRef.current.load() // prépare la source
     }
   }, [currentIndex])
 
   const handleEnded = () => {
     if (currentIndex < playlist.length - 1) {
       setCurrentIndex(currentIndex + 1)
+      // Important : attendre que load soit terminé
+      setTimeout(() => {
+        audioRef.current?.play().catch((err) => {
+          console.warn('Lecture bloquée :', err)
+        })
+      }, 100) // petit délai pour laisser le navigateur charger
     }
   }
 
@@ -48,7 +53,14 @@ export default function AudioPlayer({ playlist }: AudioPlayerProps) {
           Précédent
         </Button>
         <Button
-          onClick={() => setCurrentIndex(Math.min(currentIndex + 1, playlist.length - 1))}
+          onClick={() => {
+            if (currentIndex < playlist.length - 1) {
+              setCurrentIndex(currentIndex + 1)
+              setTimeout(() => {
+                audioRef.current?.play().catch(() => {})
+              }, 100)
+            }
+          }}
           isDisabled={currentIndex === playlist.length - 1}
         >
           Suivant
