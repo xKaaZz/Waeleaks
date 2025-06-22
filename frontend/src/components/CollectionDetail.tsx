@@ -38,6 +38,8 @@ interface Collection {
 export default function CollectionDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+
+  // All hooks FIRST
   const [collection, setCollection] = useState<Collection | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -45,41 +47,30 @@ export default function CollectionDetail() {
   const [hasInteracted, setHasInteracted] = useState(false)
   const [progress, setProgress] = useState(0)
 
+  const headerBg = useColorModeValue('gray.100', 'gray.700')
+  const trackHover = useColorModeValue('gray.200', 'gray.600')
+  const currentBg = useColorModeValue('teal.50', 'teal.900')
+  const accent = useColorModeValue('teal.500', 'teal.300')
+
   useEffect(() => {
-    api
-      .get<Collection>(`/collections/${id}`)
+    api.get<Collection>(`/collections/${id}`)
       .then(res => setCollection(res.data))
       .catch(() => setError('Erreur de chargement'))
       .finally(() => setIsLoading(false))
   }, [id])
 
   if (isLoading) {
-    return (
-      <Center h="50vh">
-        <Spinner size="xl" />
-      </Center>
-    )
+    return <Center h="50vh"><Spinner size="xl" /></Center>
   }
 
   if (error || !collection) {
-    return (
-      <Center h="50vh">
-        <Text color="red.500">{error || 'Collection introuvable'}</Text>
-      </Center>
-    )
+    return <Center h="50vh"><Text color="red.500">{error || 'Collection non trouvée'}</Text></Center>
   }
 
-  // Prépare le playlist pour l'AudioPlayer
   const playlist = (collection.tracks || []).map(track => ({
     title: track.title,
     url: `http://192.168.1.194:8002/api/audio/${track.audio_url.split('/').pop()}`,
   }))
-
-  // Thèmes
-  const headerBg = useColorModeValue('gray.100', 'gray.700')
-  const trackHover = useColorModeValue('gray.200', 'gray.600')
-  const currentBg = useColorModeValue('teal.50', 'teal.900')
-  const accent = useColorModeValue('teal.500', 'teal.300')
 
   return (
     <Box bg="gray.50" w="100%" minH="100vh" py={6} px={{ base: 4, md: 8 }}>
