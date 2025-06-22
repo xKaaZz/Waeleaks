@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException, Depends, UploadFile, File, Form, Hea
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import StreamingResponse
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from typing import List
 import os, shutil, datetime, jwt as pyjwt, requests
 from passlib.context import CryptContext
@@ -90,10 +90,13 @@ def list_collections(db: Session = Depends(get_db)):
 
 @app.get("/api/collections/{collection_id}", response_model=schemas.Collection)
 def get_collection(collection_id: int, db: Session = Depends(get_db)):
-    col = db.query(models.TrackCollection).get(collection_id)
-    if not col:
-        raise HTTPException(404, "Collection introuvable")
-    return col
+    collection = db.query(models.Collection)\
+        .options(joinedload(models.Collection.tracks))\
+        .filter(models.Collection.id == collection_id)\
+        .first()
+    if not collection:
+        raise HTTPException(status_code=404, detail="Collection non trouvée")
+    return collection
 
 @app.post("/api/collections/", response_model=schemas.Collection)
 def create_collection(
