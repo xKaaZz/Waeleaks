@@ -36,14 +36,22 @@ interface Collection {
 }
 
 export default function CollectionDetail() {
+  // Hooks always at top
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+
   const [collection, setCollection] = useState<Collection | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [hasInteracted, setHasInteracted] = useState(false)
-  const [progress, setProgress] = useState(0)
+  const [progress, setProgress] = useState(0) // from 0 to 1
+
+  // theme values
+  const headerBg   = useColorModeValue('gray.100', 'gray.700')
+  const trackHover = useColorModeValue('gray.200', 'gray.600')
+  const currentBg  = useColorModeValue('teal.50', 'teal.900')
+  const accent     = useColorModeValue('teal.500', 'teal.300')
 
   useEffect(() => {
     api
@@ -59,6 +67,7 @@ export default function CollectionDetail() {
         <Spinner size="xl" />
       </Center>
     )
+
   if (error || !collection)
     return (
       <Center h="50vh">
@@ -66,21 +75,15 @@ export default function CollectionDetail() {
       </Center>
     )
 
+  // build playlist
   const playlist = collection.tracks.map(track => ({
     title: track.title,
-    url: `http://192.168.1.194:8002/api/audio/${track.audio_url
-      .split('/')
-      .pop()}`,
+    url: `http://192.168.1.194:8002/api/audio/${track.audio_url.split('/').pop()}`,
   }))
-
-  const headerBg = useColorModeValue('gray.100', 'gray.700')
-  const trackHover = useColorModeValue('gray.200', 'gray.600')
-  const currentBg = useColorModeValue('teal.50', 'teal.900')
-  const accent = useColorModeValue('teal.500', 'teal.300')
 
   return (
     <Box bg="gray.50" w="100%" minH="100vh" py={6} px={{ base: 4, md: 8 }}>
-      {/* Album Header */}
+      {/* Album header */}
       <Flex
         direction={{ base: 'column', md: 'row' }}
         align="center"
@@ -125,7 +128,7 @@ export default function CollectionDetail() {
         </VStack>
       </Flex>
 
-      {/* Audio Player */}
+      {/* Global audio player */}
       <Box mb={8}>
         <AudioPlayer
           playlist={playlist}
@@ -139,7 +142,7 @@ export default function CollectionDetail() {
         />
       </Box>
 
-      {/* Track List */}
+      {/* Track list with top & bottom progress bars */}
       <Heading size="lg" mb={4}>
         Liste des morceaux
       </Heading>
@@ -163,6 +166,19 @@ export default function CollectionDetail() {
                 setHasInteracted(true)
               }}
             >
+              {/* top progress bar */}
+              {isCurrent && (
+                <Box
+                  position="absolute"
+                  top="0"
+                  left="0"
+                  height="3px"
+                  width={`${progress * 100}%`}
+                  bg={accent}
+                  borderTopLeftRadius="md"
+                />
+              )}
+
               <Flex justify="space-between" align="center">
                 <HStack spacing={4}>
                   <Text fontWeight="bold" w="24px" textAlign="right">
@@ -174,17 +190,19 @@ export default function CollectionDetail() {
                 </HStack>
                 <IconButton
                   aria-label={isCurrent ? 'Pause' : 'Play'}
-                  icon={isCurrent ? (
-                    <FiPause color={accent} />
-                  ) : (
-                    <FiPlay color={accent} />
-                  )}
+                  icon={
+                    isCurrent ? (
+                      <FiPause color={accent} />
+                    ) : (
+                      <FiPlay color={accent} />
+                    )
+                  }
                   size="sm"
                   variant="ghost"
                 />
               </Flex>
 
-              {/* Barre de progression */}
+              {/* bottom progress bar */}
               {isCurrent && (
                 <Box
                   position="absolute"
