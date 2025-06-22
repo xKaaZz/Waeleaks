@@ -1,3 +1,4 @@
+// src/components/AddTrackForm.tsx
 import {
   Box,
   Button,
@@ -27,68 +28,53 @@ interface Track {
 export default function AddTrackForm() {
   const { id: prefillCollection } = useParams<{ id: string }>()
   const toast = useToast()
-
   const [collections, setCollections] = useState<Collection[]>([])
-  const [collectionIds, setCollectionIds] = useState<string[]>( 
-    prefillCollection ? [prefillCollection] : []
-  )
+  const [collectionId, setCollectionId] = useState<string>(prefillCollection || '')
   const [existingTracks, setExistingTracks] = useState<Track[]>([])
-  const [selectedTrackId, setSelectedTrackId] = useState<string>('')
-
+  const [trackId, setTrackId] = useState<string>('')
   const [title, setTitle] = useState('')
   const [file, setFile] = useState<File | null>(null)
   const [loading, setLoading] = useState(false)
 
-  // charger toutes les collections
+  // Charge toutes les collections
   useEffect(() => {
     api
       .get<Collection[]>('/collections')
       .then(res => setCollections(res.data))
-      .catch(() =>
-        toast({ title: 'Erreur chargement collections', status: 'error' })
-      )
-  }, [toast])
+      .catch(() => toast({ title: 'Erreur chargement collections', status: 'error' }))
+  }, [])
 
-  // charger les tracks si une ou plusieurs collections sélectionnées
+  // Dès qu’on choisit une collection, récupère ses pistes
   useEffect(() => {
-    if (collectionIds.length > 0) {
-      // on récupère l'union de tous les tracks des collections
-      Promise.all(
-        collectionIds.map(id =>
-          api.get<Track[]>(`/collections/${id}/tracks`)
-        )
-      )
-        .then(results => {
-          const all: Track[] = []
-          results.forEach(r =>
-            r.data.forEach(t => {
-              if (!all.find(x => x.id === t.id)) all.push(t)
-            })
-          )
-          setExistingTracks(all)
-        })
+    if (collectionId) {
+      api
+        .get<Track[]>(`/collections/${collectionId}/tracks`)
+        .then(res => setExistingTracks(res.data))
         .catch(() =>
-          toast({ title: 'Impossible de charger pistes existantes', status: 'error' })
+          toast({ title: 'Impossible de charger les sons existants', status: 'error' })
         )
     } else {
       setExistingTracks([])
-      setSelectedTrackId('')
+      setTrackId('')
     }
-  }, [collectionIds, toast])
+  }, [collectionId])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
 
     try {
-      if (collectionIds.length > 0 && selectedTrackId) {
-        // rattacher un track existant à N collections
-        await api.put(`/tracks/${selectedTrackId}`, {
-          collection_ids: collectionIds.map(Number),
-        })
-        toast({ title: 'Son mis à jour dans les collections !', status: 'success' })
+      if (collectionId) {
+        // On rattache un son existant
+        if (!trackId) {
+          toast({ title: 'Sélectionnez d’abord un son existant', status: 'warning' })
+          setLoading(false)
+          return
+        }
+        await api.put(`/tracks/${trackId}`, { collection_id: Number(collectionId) })
+        toast({ title: 'Son rattaché à la collection !', status: 'success' })
       } else {
-        // créer un nouveau track indépendant
+        // On ajoute un nouveau son “libre”
         if (!title.trim() || !file) {
           toast({ title: 'Tous les champs sont requis', status: 'warning' })
           setLoading(false)
@@ -97,15 +83,9 @@ export default function AddTrackForm() {
         const formData = new FormData()
         formData.append('title', title)
         formData.append('audio', file)
-        const res = await api.post('/tracks', formData, {
+        await api.post('/tracks', formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         })
-        // si on a aussi sélectionné des collections on met à jour immédiatement
-        if (collectionIds.length > 0) {
-          await api.put(`/tracks/${res.data.id}`, {
-            collection_ids: collectionIds.map(Number),
-          })
-        }
         toast({ title: 'Nouveau son ajouté !', status: 'success' })
         setTitle('')
         setFile(null)
@@ -133,51 +113,43 @@ export default function AddTrackForm() {
     <Box maxW="lg" mx="auto" mt={8}>
       <form onSubmit={handleSubmit}>
         <VStack spacing={6} align="stretch">
-
-          {/* Sélection multiple de collections */}
+          {/* Choix de la collection */}
           <FormControl>
-            <FormLabel>Collections (facultatif)</FormLabel>
+            <FormLabel>Collection (facultatif)</FormLabel>
             <Select
-              multiple
-              value={collectionIds}
-              onChange={e =>
-                setCollectionIds(
-                  Array.from(e.target.selectedOptions, o => o.value)
-                )
-              }
-              size="lg"
-              h="auto"
+              placeholder="Aucune collection"
+              value={collectionId}
+              onChange={e => setCollectionId(e.target.value)}
             >
               {collections.map(c => (
-                <option key={c.id} value={c.id.toString()}>
+                <option key={c.id} value={c.id}>
                   {c.title}
                 </option>
               ))}
             </Select>
-            <Text fontSize="sm" color="gray.500">
-              (ctrl/cmd+click pour plusieurs)
-            </Text>
           </FormControl>
 
-          {collectionIds.length > 0 && (
-            <FormControl isRequired>
-              <FormLabel>Choisir un son existant</FormLabel>
-              <Select
-                placeholder="Sélectionnez un son"
-                value={selectedTrackId}
-                onChange={e => setSelectedTrackId(e.target.value)}
-              >
-                {existingTracks.map(t => (
-                  <option key={t.id} value={t.id.toString()}>
-                    {t.title}
-                  </option>
-                ))}
-              </Select>
-            </FormControl>
-          )}
-
-          {collectionIds.length === 0 && (
+          {collectionId ? (
             <>
+              {/* Si on a choisi une collection, on rattache un son existant */}
+              <FormControl isRequired>
+                <FormLabel>Choisir un son existant</FormLabel>
+                <Select
+                  placeholder="Sélectionnez un son"
+                  value={trackId}
+                  onChange={e => setTrackId(e.target.value)}
+                >
+                  {existingTracks.map(t => (
+                    <option key={t.id} value={t.id}>
+                      {t.title}
+                    </option>
+                  ))}
+                </Select>
+              </FormControl>
+            </>
+          ) : (
+            <>
+              {/* Sans collection, on crée un nouveau son */}
               <FormControl isRequired>
                 <FormLabel>Titre du son</FormLabel>
                 <Input
@@ -199,7 +171,7 @@ export default function AddTrackForm() {
           )}
 
           <Button type="submit" colorScheme="green" width="full">
-            {collectionIds.length > 0 ? 'Rattacher le son' : 'Ajouter le son'}
+            {collectionId ? 'Rattacher le son' : 'Ajouter le son'}
           </Button>
         </VStack>
       </form>
