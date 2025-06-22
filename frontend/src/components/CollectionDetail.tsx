@@ -36,18 +36,25 @@ interface Collection {
 }
 
 export default function CollectionDetail() {
+  // ─── Hooks en haut ──────────────────────────────────────────────────────────
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+
   const [collection, setCollection] = useState<Collection | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [hasInteracted, setHasInteracted] = useState(false)
-  const [progress, setProgress] = useState(0) // 0→1
+  const [progress, setProgress] = useState(0) // 0 → 1
+
+  // Thème & couleurs
+  const headerBg     = useColorModeValue('gray.100', 'gray.700')
+  const trackHover   = useColorModeValue('gray.200', 'gray.600')
+  const currentBg    = useColorModeValue('teal.50',  'teal.900')
+  const accent       = useColorModeValue('teal.500', 'teal.300')
 
   useEffect(() => {
-    api
-      .get<Collection>(`/collections/${id}`)
+    api.get<Collection>(`/collections/${id}`)
       .then(res => setCollection(res.data))
       .catch(() => setError('Erreur de chargement'))
       .finally(() => setIsLoading(false))
@@ -59,6 +66,7 @@ export default function CollectionDetail() {
         <Spinner size="xl" />
       </Center>
     )
+
   if (error || !collection)
     return (
       <Center h="50vh">
@@ -66,21 +74,15 @@ export default function CollectionDetail() {
       </Center>
     )
 
-  // Build playlist
+  // Build playlist URLs
   const playlist = collection.tracks.map(track => ({
     title: track.title,
     url: `http://192.168.1.194:8002/api/audio/${track.audio_url.split('/').pop()}`,
   }))
 
-  // Theming
-  const headerBg = useColorModeValue('gray.100', 'gray.700')
-  const trackHover = useColorModeValue('gray.200', 'gray.600')
-  const currentBg = useColorModeValue('teal.50', 'teal.900')
-  const accent = useColorModeValue('teal.500', 'teal.300')
-
   return (
     <Box bg="gray.50" w="100%" minH="100vh" py={6} px={{ base: 4, md: 8 }}>
-      {/* Album header */}
+      {/* ─── Album Header ─────────────────────────────────────────────────────── */}
       <Flex
         direction={{ base: 'column', md: 'row' }}
         align="center"
@@ -125,7 +127,7 @@ export default function CollectionDetail() {
         </VStack>
       </Flex>
 
-      {/* Global audio player */}
+      {/* ─── Global Audio Player ─────────────────────────────────────────────── */}
       <Box mb={8}>
         <AudioPlayer
           playlist={playlist}
@@ -139,7 +141,7 @@ export default function CollectionDetail() {
         />
       </Box>
 
-      {/* Track list with conic-gradient border */}
+      {/* ─── Track List with Conic Border ──────────────────────────────────── */}
       <Heading size="lg" mb={4}>
         Liste des morceaux
       </Heading>
@@ -159,16 +161,15 @@ export default function CollectionDetail() {
                 setCurrentIndex(idx)
                 setHasInteracted(true)
               }}
-              borderWidth="4px"
-              borderColor="transparent"
-              borderStyle="solid"
+
+              /* ── Border conique en style inline ────────────────────────── */
+              border="4px solid transparent"
               borderRadius="md"
-              borderImageSlice={1}
-              borderImageSource={
-                isCurrent
-                  ? `conic-gradient(${accent} ${progress * 360}deg, transparent 0deg)`
-                  : undefined
-              }
+              style={{
+                borderImage: isCurrent
+                  ? `conic-gradient(${accent} ${progress * 360}deg, transparent 0deg) 1`
+                  : undefined,
+              }}
             >
               <Flex justify="space-between" align="center">
                 <HStack spacing={4}>
@@ -181,11 +182,7 @@ export default function CollectionDetail() {
                 </HStack>
                 <IconButton
                   aria-label={isCurrent ? 'Pause' : 'Play'}
-                  icon={isCurrent ? (
-                    <FiPause color={accent} />
-                  ) : (
-                    <FiPlay color={accent} />
-                  )}
+                  icon={isCurrent ? <FiPause color={accent} /> : <FiPlay color={accent} />}
                   size="sm"
                   variant="ghost"
                 />
