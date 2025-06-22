@@ -19,11 +19,20 @@ export default function AudioPlayer({
 }: AudioPlayerProps) {
     const audioRef = useRef<HTMLAudioElement | null>(null)
     const currentSound = playlist[currentIndex]
+    const playOnSelect = useRef(false)
 
     useEffect(() => {
         if (audioRef.current) {
             audioRef.current.load()
-            // ❌ pas de .play() ici → on attend une interaction manuelle
+
+            if (playOnSelect.current) {
+                setTimeout(() => {
+                    audioRef.current?.play().catch(err => {
+                        console.warn('Lecture bloquée :', err)
+                    })
+                }, 100)
+                playOnSelect.current = false
+            }
         }
     }, [currentIndex])
 
