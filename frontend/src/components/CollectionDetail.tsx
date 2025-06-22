@@ -35,18 +35,18 @@ interface Collection {
 }
 
 export default function CollectionDetail() {
-  // ─── Hooks en haut ─────────────────────────────────────────────────────────
+  // ─── Hooks (TOUJOURS en haut) ─────────────────────────────
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
 
-  const [collection, setCollection] = useState<Collection | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [currentIndex, setCurrentIndex] = useState(0)
+  const [collection,    setCollection]    = useState<Collection | null>(null)
+  const [isLoading,     setIsLoading]     = useState(true)
+  const [error,         setError]         = useState<string | null>(null)
+  const [currentIndex,  setCurrentIndex]  = useState(0)
   const [hasInteracted, setHasInteracted] = useState(false)
-  const [progress, setProgress] = useState(0) // 0 → 1
+  const [progress,      setProgress]      = useState(0)  // 0 → 1
 
-  // Thème & Couleurs
+  // Thème / Couleurs
   const headerBg   = useColorModeValue('gray.100', 'gray.700')
   const trackHover = useColorModeValue('gray.200', 'gray.600')
   const currentBg  = useColorModeValue('teal.50',  'teal.900')
@@ -72,7 +72,7 @@ export default function CollectionDetail() {
       </Center>
     )
 
-  // Build playlist
+  // Construction de la playlist
   const playlist = collection.tracks.map(t => ({
     title: t.title,
     url: `http://192.168.1.194:8002/api/audio/${t.audio_url.split('/').pop()}`,
@@ -80,7 +80,7 @@ export default function CollectionDetail() {
 
   return (
     <Box bg="gray.50" w="100%" minH="100vh" py={6} px={{ base: 4, md: 8 }}>
-      {/* ─── Album Header ───────────────────────────────────────────────────── */}
+      {/* ─── Album Header ───────────────────────────────────────────── */}
       <Flex
         direction={{ base: 'column', md: 'row' }}
         align="center"
@@ -125,7 +125,7 @@ export default function CollectionDetail() {
         </VStack>
       </Flex>
 
-      {/* ─── Lecteur global ────────────────────────────────────────────────── */}
+      {/* ─── Audio Player ─────────────────────────────────────────────── */}
       <Box mb={8}>
         <AudioPlayer
           playlist={playlist}
@@ -139,7 +139,7 @@ export default function CollectionDetail() {
         />
       </Box>
 
-      {/* ─── Liste des morceaux ────────────────────────────────────────────── */}
+      {/* ─── Liste des morceaux ───────────────────────────────────────── */}
       <Heading size="lg" mb={4}>
         Liste des morceaux
       </Heading>
@@ -165,48 +165,64 @@ export default function CollectionDetail() {
                 setHasInteracted(true)
               }}
             >
-              {/* barre haute */}
+              {/* Barre haute */}
               {isCurrent && !isComplete && (
                 <Box
                   position="absolute"
                   top="0"
                   left="0"
-                  height="3px"
+                  height="4px"
                   width={`${progress * 100}%`}
                   bg={accent}
                   borderTopLeftRadius="md"
                 />
               )}
 
-              {/* contenu de la ligne */}
               <Flex justify="space-between" align="center">
-                {/* ... */}
+                <HStack spacing={4}>
+                  <Text fontWeight="bold" w="24px" textAlign="right">
+                    {idx + 1}.
+                  </Text>
+                  <Text fontWeight={isCurrent ? 'semibold' : 'normal'}>
+                    {sound.title}
+                  </Text>
+                </HStack>
+                <IconButton
+                  aria-label={isCurrent ? 'Pause' : 'Play'}
+                  icon={
+                    isCurrent
+                      ? <FiPause color={accent} />
+                      : <FiPlay  color={accent} />
+                  }
+                  size="sm"
+                  variant="ghost"
+                />
               </Flex>
 
-              {/* barre basse */}
+              {/* Barre basse */}
               {isCurrent && !isComplete && (
                 <Box
                   position="absolute"
                   bottom="0"
                   left="0"
-                  height="3px"
+                  height="4px"
                   width={`${progress * 100}%`}
                   bg={accent}
                   borderBottomLeftRadius="md"
                 />
               )}
 
-              {/* barre verticale droite à la fin */}
+              {/* Barre droite symétrique à la fin */}
               {isComplete && (
                 <Box
                   position="absolute"
                   top="0"
                   right="0"
-                  width="4px"                     // ← même largeur qu'à gauche
+                  width="4px"
                   height="100%"
                   bg={accent}
-                  borderTopRightRadius="md"      // ← même rayon qu'à gauche
-                  borderBottomRightRadius="md"   // ← même rayon qu'à gauche
+                  borderTopRightRadius="md"
+                  borderBottomRightRadius="md"
                 />
               )}
             </ListItem>
