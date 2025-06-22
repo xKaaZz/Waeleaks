@@ -90,9 +90,9 @@ def list_collections(db: Session = Depends(get_db)):
 
 @app.get("/api/collections/{collection_id}", response_model=schemas.Collection)
 def get_collection(collection_id: int, db: Session = Depends(get_db)):
-    collection = db.query(models.Collection)\
-        .options(joinedload(models.Collection.tracks))\
-        .filter(models.Collection.id == collection_id)\
+    collection = db.query(models.TrackCollection)\
+        .options(joinedload(models.TrackCollection.tracks))\
+        .filter(models.TrackCollection.id == collection_id)\
         .first()
     if not collection:
         raise HTTPException(status_code=404, detail="Collection non trouvée")
