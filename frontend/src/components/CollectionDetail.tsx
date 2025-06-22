@@ -1,4 +1,3 @@
-// src/components/CollectionDetail.tsx
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
@@ -36,50 +35,48 @@ interface Collection {
 }
 
 export default function CollectionDetail() {
+  // Hooks en haut
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+
   const [collection, setCollection] = useState<Collection | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [hasInteracted, setHasInteracted] = useState(false)
-  const [progress, setProgress] = useState(0)
+  const [progress, setProgress] = useState(0) // de 0 à 1
+
+  // Thème / Couleurs
+  const headerBg   = useColorModeValue('gray.100', 'gray.700')
+  const trackHover = useColorModeValue('gray.200', 'gray.600')
+  const currentBg  = useColorModeValue('teal.50',  'teal.900')
+  const accent     = useColorModeValue('teal.500', 'teal.300')
 
   useEffect(() => {
-    api
-      .get<Collection>(`/collections/${id}`)
+    api.get<Collection>(`/collections/${id}`)
       .then(res => setCollection(res.data))
       .catch(() => setError('Erreur de chargement'))
       .finally(() => setIsLoading(false))
   }, [id])
 
-  if (isLoading) {
+  if (isLoading)
     return (
       <Center h="50vh">
         <Spinner size="xl" />
       </Center>
     )
-  }
-
-  if (error || !collection) {
+  if (error || !collection)
     return (
       <Center h="50vh">
-        <Text color="red.500">{error || 'Collection introuvable'}</Text>
+        <Text color="red.500">{error}</Text>
       </Center>
     )
-  }
 
-  // Prépare le playlist pour l'AudioPlayer
-  const playlist = collection.tracks.map(track => ({
-    title: track.title,
-    url: `http://192.168.1.194:8002/api/audio/${track.audio_url.split('/').pop()}`,
+  // Construire la playlist
+  const playlist = collection.tracks.map(t => ({
+    title: t.title,
+    url: `http://192.168.1.194:8002/api/audio/${t.audio_url.split('/').pop()}`,
   }))
-
-  // Thèmes
-  const headerBg = useColorModeValue('gray.100', 'gray.700')
-  const trackHover = useColorModeValue('gray.200', 'gray.600')
-  const currentBg = useColorModeValue('teal.50', 'teal.900')
-  const accent = useColorModeValue('teal.500', 'teal.300')
 
   return (
     <Box bg="gray.50" w="100%" minH="100vh" py={6} px={{ base: 4, md: 8 }}>
@@ -119,8 +116,8 @@ export default function CollectionDetail() {
               {hasInteracted ? 'Pause' : 'Play Album'}
             </Button>
             <Button
-              onClick={() => navigate(`/collection/${collection.id}/add`)}
               variant="outline"
+              onClick={() => navigate(`/collection/${collection.id}/add`)}
             >
               Ajouter un son
             </Button>
@@ -128,89 +125,106 @@ export default function CollectionDetail() {
         </VStack>
       </Flex>
 
-      {/* Audio Player : uniquement si on a au moins un son */}
-      {playlist.length > 0 && (
-        <Box mb={8}>
-          <AudioPlayer
-            playlist={playlist}
-            currentIndex={currentIndex}
-            onSelectTrack={idx => {
-              setCurrentIndex(idx)
-              setHasInteracted(true)
-            }}
-            hasInteracted={hasInteracted}
-            onProgress={setProgress}
-          />
-        </Box>
-      )}
+      {/* Audio Player */}
+      <Box mb={8}>
+        <AudioPlayer
+          playlist={playlist}
+          currentIndex={currentIndex}
+          onSelectTrack={idx => {
+            setCurrentIndex(idx)
+            setHasInteracted(true)
+          }}
+          hasInteracted={hasInteracted}
+          onProgress={setProgress}
+        />
+      </Box>
 
-      {/* Track List */}
+      {/* Liste des morceaux */}
       <Heading size="lg" mb={4}>
         Liste des morceaux
       </Heading>
+      <List spacing={2}>
+        {playlist.map((sound, idx) => {
+          const isCurrent  = idx === currentIndex
+          const isComplete = isCurrent && progress >= 0.99
 
-      {playlist.length === 0 ? (
-        <Center py={16}>
-          <Text color="gray.500" fontStyle="italic">
-            Aucun son dans cette collection.
-          </Text>
-        </Center>
-      ) : (
-        <List spacing={2}>
-          {playlist.map((sound, idx) => {
-            const isCurrent = idx === currentIndex
-            return (
-              <ListItem
-                as="div"
-                key={idx}
-                position="relative"
-                bg={isCurrent ? currentBg : headerBg}
-                borderLeftWidth={isCurrent ? '4px' : 0}
-                borderLeftColor={isCurrent ? accent : 'transparent'}
-                borderRadius="md"
-                _hover={{ bg: isCurrent ? currentBg : trackHover }}
-                p={3}
-                cursor="pointer"
-                onClick={() => {
-                  setCurrentIndex(idx)
-                  setHasInteracted(true)
-                }}
-              >
-                <Flex justify="space-between" align="center">
-                  <HStack spacing={4}>
-                    <Text fontWeight="bold" w="24px" textAlign="right">
-                      {idx + 1}.
-                    </Text>
-                    <Text fontWeight={isCurrent ? 'semibold' : 'normal'}>
-                      {sound.title}
-                    </Text>
-                  </HStack>
-                  <IconButton
-                    aria-label={isCurrent ? 'Pause' : 'Play'}
-                    icon={
-                      isCurrent ? <FiPause color={accent} /> : <FiPlay color={accent} />
-                    }
-                    size="sm"
-                    variant="ghost"
-                  />
-                </Flex>
+          return (
+            <ListItem
+              as="div"
+              key={idx}
+              position="relative"
+              bg={isCurrent ? currentBg : headerBg}
 
-                {isCurrent && (
-                  <Box
-                    position="absolute"
-                    bottom="0"
-                    left="0"
-                    height="3px"
-                    width={`${progress * 100}%`}
-                    bg={accent}
-                    borderBottomLeftRadius="md"
-                  />
-                )}
-              </ListItem>
-            )
-          })}
-        </List>
-      )}
+              /* Barre gauche fixe */
+              borderLeftWidth={isCurrent ? '4px' : 0}
+              borderLeftColor={isCurrent ? accent : 'transparent'}
+
+              /* Barre droite symétrique à la fin */
+              borderRightWidth={isComplete ? '4px' : 0}
+              borderRightColor={isComplete ? accent : 'transparent'}
+
+              borderStyle="solid"
+              borderRadius="md"
+              _hover={{ bg: isCurrent ? currentBg : trackHover }}
+              p={3}
+              cursor="pointer"
+              onClick={() => {
+                setCurrentIndex(idx)
+                setHasInteracted(true)
+              }}
+            >
+              {/* Barre haute */}
+              {isCurrent && !isComplete && (
+                <Box
+                  position="absolute"
+                  top="0"
+                  left="0"
+                  height="4px"
+                  width={`${progress * 100}%`}
+                  bg={accent}
+                  borderTopLeftRadius="md"
+                />
+              )}
+
+              <Flex justify="space-between" align="center">
+                <HStack spacing={4}>
+                  <Text fontWeight="bold" w="24px" textAlign="right">
+                    {idx + 1}.
+                  </Text>
+                  <Text fontWeight={isCurrent ? 'semibold' : 'normal'}>
+                    {sound.title}
+                  </Text>
+                </HStack>
+                <IconButton
+                  aria-label={isCurrent ? 'Pause' : 'Play'}
+                  icon={
+                    isCurrent ? (
+                      <FiPause color={accent} />
+                    ) : (
+                      <FiPlay  color={accent} />
+                    )
+                  }
+                  size="sm"
+                  variant="ghost"
+                />
+              </Flex>
+
+              {/* Barre basse */}
+              {isCurrent && !isComplete && (
+                <Box
+                  position="absolute"
+                  bottom="0"
+                  left="0"
+                  height="4px"
+                  width={`${progress * 100}%`}
+                  bg={accent}
+                  borderBottomLeftRadius="md"
+                />
+              )}
+            </ListItem>
+          )
+        })}
+      </List>
     </Box>
   )
 }
