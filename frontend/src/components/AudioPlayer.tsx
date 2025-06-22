@@ -18,47 +18,35 @@ export default function AudioPlayer({
   onSelectTrack,
 }: AudioPlayerProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null)
-  const playOnLoadRef = useRef(false)
-
   const currentSound = playlist[currentIndex]
 
   useEffect(() => {
     if (!audioRef.current) return
+
     audioRef.current.load()
 
-    if (playOnLoadRef.current) {
-      const tryPlay = () => {
-        audioRef.current?.play().catch(() => {
-          // Retry after slight delay if autoplay fails
-          setTimeout(() => {
-            audioRef.current?.play().catch(() => {})
-          }, 100)
-        })
-      }
-
-      // petit délai pour que le DOM reflète la nouvelle source
-      setTimeout(tryPlay, 50)
-      playOnLoadRef.current = false
-    }
+    // Force la lecture à chaque changement de son
+    setTimeout(() => {
+      audioRef.current?.play().catch((err) => {
+        console.warn('Lecture bloquée :', err)
+      })
+    }, 100)
   }, [currentIndex])
 
   const handleEnded = () => {
     if (currentIndex < playlist.length - 1) {
-      playOnLoadRef.current = true
       onSelectTrack(currentIndex + 1)
     }
   }
 
   const handlePrevious = () => {
     if (currentIndex > 0) {
-      playOnLoadRef.current = true
       onSelectTrack(currentIndex - 1)
     }
   }
 
   const handleNext = () => {
     if (currentIndex < playlist.length - 1) {
-      playOnLoadRef.current = true
       onSelectTrack(currentIndex + 1)
     }
   }
